@@ -2,7 +2,39 @@
 @{
     ViewData["Title"] = "Группа";
 }
-
+@{
+    string guidValue = Model.Name.ToString();
+}
 <div>
     @Model.Name
 </div>
+
+<div id="chatroom"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script>
+
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5010/user")
+        .build();
+    
+     hubConnection.on("UserAdded", function(username) {
+        let messageElement = document.createElement("p");
+        messageElement.textContent = "Added " +  username ;
+        document.getElementById("chatroom").appendChild(messageElement);
+    });
+
+    hubConnection.start()
+        .then(function () {
+            let groupId = '@Html.Raw(guidValue)';
+
+            hubConnection.invoke("JoinGroupFromLink", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+        })
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    
+</script>

@@ -1,3 +1,4 @@
+using DAL.interfaces;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.SignalR;
 using Service.Interfaces;
@@ -6,38 +7,30 @@ namespace CodeCup.Hubs
 {
     public class UserHub: Hub
     {
-        private readonly IGroupService _groupService;
         private readonly ILogger<UserHub> _logger;
-        public UserHub(IGroupService groupService, ILogger<UserHub> logger)
+        private readonly IGroupRepository _groupRepository;
+        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository)
         {
+            _groupRepository = groupRepository;
             _logger = logger;
-            _groupService = groupService;
         }
-        public async Task SendMessage(string user, string message, string group)
+       
+        public async Task CreateGroup(string id)
         {
-            await Clients.Group(group).SendAsync("ReceiveMessage", user, message);
+            await Groups.AddToGroupAsync(Context.ConnectionId, id);
+            await Clients.Group(id).SendAsync("CreateGroup", id);
         }
-        public async Task CreateGroup(string name)
+
+        public async Task JoinGroupFromLink(string id)
         {
-            _logger.LogInformation("Id при создании группы: " + Context.ConnectionId);
+            _logger.LogInformation("Join " + Context.ConnectionId);
+            var group = await _groupRepository.GetAsync(Guid.Parse(id));
 
-            string groupName = await _groupService.CreateAsync(new GroupVm() {Name = name, UserId = Context.ConnectionId});
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            await Clients.Group(groupName).SendAsync("CreateGroup", groupName);
-        }
-        public async Task Send(string message)
-        {
-            await this.Clients.All.SendAsync("Receive", message);
-        }
-        public async Task JoinGroupFromLink(string group)
-        {
-            _logger.LogInformation("Id при присоединении к группе: " + Context.ConnectionId);
-
-            await _groupService.JoinAsync(new UserVm() {UserId = Context.ConnectionId, GroupId = group});
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, group);
-            await Clients.Group(group).SendAsync("UserAdded", Context.ConnectionId);
+            if (group?.Status == Domain.Enum.StatusEntity.Active)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", Context.ConnectionId);
+            }
         }
     }
 }
