@@ -66,6 +66,7 @@ namespace Новая_папка.Controllers
                 {
                     return View("groupUser", new GroupVm() {Name = group});
                 }
+                
                 return View("NotFound");
             }
             catch (System.Exception)

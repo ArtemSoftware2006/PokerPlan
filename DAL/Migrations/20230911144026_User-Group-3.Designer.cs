@@ -3,6 +3,7 @@ using System;
 using DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230911144026_User-Group-3")]
+    partial class UserGroup3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.10");
@@ -85,36 +88,6 @@ namespace DAL.Migrations
                     b.ToTable("UserGroups");
                 });
 
-            modelBuilder.Entity("Domain.Entity.Vote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GroupId1")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Value")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId1");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Votes");
-                });
-
             modelBuilder.Entity("Domain.Entity.User", b =>
                 {
                     b.HasOne("Domain.Entity.Group", "Group")
@@ -131,25 +104,6 @@ namespace DAL.Migrations
                     b.HasOne("Domain.Entity.Group", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entity.Vote", b =>
-                {
-                    b.HasOne("Domain.Entity.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

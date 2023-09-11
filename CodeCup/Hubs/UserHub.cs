@@ -1,9 +1,7 @@
 using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
-using Domain.ViewModel;
 using Microsoft.AspNetCore.SignalR;
-using Service.Interfaces;
 
 namespace CodeCup.Hubs
 {
@@ -29,17 +27,13 @@ namespace CodeCup.Hubs
 
         public async Task JoinGroupFromLink(string id)
         {
-            _logger.LogInformation("Join " + Context.ConnectionId);
-
             var group = await _groupRepository.GetAsync(Guid.Parse(id));
-
-            _logger.LogWarning(id);
 
             var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(id));
 
             if (countUsers < 6)
             {
-                 var user = new User() {
+                var user = new User() {
                 Name = names[countUsers],
                 DateCreated = DateTime.Now,
                 Role = Role.User,
@@ -54,6 +48,18 @@ namespace CodeCup.Hubs
                     await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", user.Name);
                 }   
             }
+        }
+        public async Task SetVote(string groupId, string username, int value)
+        {
+            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+            var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) 
+                && x.Name == username).FirstOrDefault();
+
+            var vote = new Vote() {
+                DateCreated = DateTime.Now,
+                Value = value,
+                UserId = user.Id,
+            };
         }
     }
 }
