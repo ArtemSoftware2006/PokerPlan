@@ -1,6 +1,6 @@
+using Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Новая_папка.Models;
 
 namespace Новая_папка
 {

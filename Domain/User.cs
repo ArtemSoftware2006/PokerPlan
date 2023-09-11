@@ -1,4 +1,4 @@
-namespace Новая_папка.Models
+namespace Domain
 {
     public class User
     {
