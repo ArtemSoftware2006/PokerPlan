@@ -62,9 +62,34 @@ namespace Service.Impl
             }
         }
 
-        public Task<string> JoinAsync(Guid groupId, UserVm model)
+        public async Task<string> JoinAsync(Guid groupId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = new User()
+                {
+                    Name = Guid.NewGuid().ToString(),
+                    Role = Role.User,
+                    DateCreated = DateTime.Now,
+                };
+
+                await _userRepository.CreateAsync(user);
+
+                var userGroup = new UserGroup()
+                {
+                    UserId = user.Id,
+                    GroupId = groupId
+                };
+
+                await _userGroupRepository.CreateAsync(userGroup);
+
+                return user.Id.ToString();
+            }
+            catch (System.Exception)
+            {
+                
+                throw;
+            }
         }
     }
 }
