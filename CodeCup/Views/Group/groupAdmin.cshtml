@@ -5,12 +5,15 @@
 @{
     string guidValue = Model.Id.ToString();
 }
-<div>
-    @Model.Name
+<div class="d-flex flex-column m-2 justefy-content-center text-center">
+    <div class="p-2">
+        @Model.Name
+    </div>
+    <div class="border border-2 radius-3 p-3 m-2">
+        @Model.Link
+    </div>
 </div>
-<div>
-    @Model.Link
-</div>
+
 
 <div id="chatroom"></div>
 
