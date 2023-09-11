@@ -1,9 +1,12 @@
 using CodeCup.Hubs;
 using DAL;
+using DAL.Impl;
+using DAL.interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlite("Data Source=codeCupDb.db"));
 
