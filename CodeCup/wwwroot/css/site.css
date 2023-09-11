@@ -15,3 +15,7 @@ html {
 html {
   position: relative;
 }
+
+.form--input {
+  width: 50%;
+}

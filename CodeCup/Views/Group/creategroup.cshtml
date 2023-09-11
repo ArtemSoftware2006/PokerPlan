@@ -2,9 +2,15 @@
     ViewData["Title"] = "Create Group";
 }
 
-<form method="post">
-    <input type="text" name="name" placeholder="Группа" id="groupId"/>
-    <button type="submit">Создать</button>
-</form>
+
+<div class="d-flex h-100 justify-content-center align-items-center">
+
+    <form class="d-flex flex-column form--input" method="post">
+        <label class="mb-0 ms-0 m-2 p-2">Название Комнаты</label>
+        <input type="text" class="mt-0 m-2 p-2 ps-4 pe-4" name="name" placeholder="Имя команты" id="groupId"/>
+        <button class="btn btn-primary m-2 p-2 radius-3" type="submit">Создать</button>
+    </form>
+
+</div>
 
 
