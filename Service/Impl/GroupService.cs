@@ -1,7 +1,9 @@
+using System.Runtime.CompilerServices;
 using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
+using Microsoft.Extensions.Logging;
 using Service.Interfaces;
 
 namespace Service.Impl
@@ -11,8 +13,10 @@ namespace Service.Impl
         private readonly IUserRepository _userRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IUserGroupRepository _userGroupRepository;
-        public GroupService(IUserRepository userRepository, IGroupRepository groupRepository, IUserGroupRepository userGroupRepository)
+        private readonly ILogger<GroupService> _logger;
+        public GroupService(IUserRepository userRepository, IGroupRepository groupRepository, IUserGroupRepository userGroupRepository, ILogger<GroupService> logger)
         {
+            _logger = logger;
             _userRepository = userRepository;
             _groupRepository = groupRepository;
             _userGroupRepository = userGroupRepository;
@@ -36,16 +40,20 @@ namespace Service.Impl
                 {
                     var user = new User()
                     {
-                        Name = Guid.NewGuid().ToString(),
+                        Name = model.UserId,
                         Role = Role.Admin,
                         DateCreated = DateTime.Now,
                     };
+
+                    await _userRepository.CreateAsync(user);
 
                     var userGroup = new UserGroup()
                     {
                         UserId = user.Id,
                         GroupId = group.Id
                     };
+
+                    _logger.LogInformation("При создании UserGroup : " +  userGroup.GroupId + " " + userGroup.UserId);
 
                     await _userGroupRepository.CreateAsync(userGroup);
 
@@ -57,18 +65,20 @@ namespace Service.Impl
             }
             catch (System.Exception ex)
             {
-                
-                throw;
+               _logger.LogError(ex.Message);
+               _logger.LogError(ex.StackTrace);
+
+               throw;
             }
         }
 
-        public async Task<string> JoinAsync(Guid groupId)
+        public async Task<string> JoinAsync(UserVm model)
         {
             try
             {
                 var user = new User()
                 {
-                    Name = Guid.NewGuid().ToString(),
+                    Name = model.UserId,
                     Role = Role.User,
                     DateCreated = DateTime.Now,
                 };
@@ -78,17 +88,20 @@ namespace Service.Impl
                 var userGroup = new UserGroup()
                 {
                     UserId = user.Id,
-                    GroupId = groupId
+                    GroupId = Guid.Parse(model.GroupId)
                 };
 
                 await _userGroupRepository.CreateAsync(userGroup);
 
                 return user.Id.ToString();
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                
+                _logger.LogError(ex.Message);
+               _logger.LogError(ex.StackTrace);
+
                 throw;
+
             }
         }
     }

@@ -1,10 +1,9 @@
-using System.Text.RegularExpressions;
 using DAL;
 using Microsoft.AspNetCore.Mvc;
 using Новая_папка.Models;
 
 namespace Новая_папка.Controllers
-{    
+{
     [Route("[controller]/[action]")]
     public class GroupController : Controller
     {
@@ -27,10 +26,19 @@ namespace Новая_папка.Controllers
             _logger.LogInformation(group.ToString());
             return View("CreateLinkGroup", new GroupModel() {Id = group});
         }
+        [HttpGet]
         public IActionResult CreateGroup() 
         {
-            _logger.LogInformation("Add group");
             return View();
+        }
+        [HttpPost]
+        public IActionResult CreateGroup(string name) 
+        {
+            string link = "http://localhost:5010/Group/Join/" + Guid.NewGuid();
+
+            
+
+            return View("group", new GroupVm() {Name = name, Link = link});
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

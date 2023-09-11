@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace Domain.Entity
 {
     public class UserGroup

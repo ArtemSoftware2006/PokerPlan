@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230911084123_RoleStatusGuid")]
-    partial class RoleStatusGuid
+    [Migration("20230911112612_UpdateUserGroup")]
+    partial class UpdateUserGroup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,10 +68,7 @@ namespace DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GroupId1")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
@@ -79,7 +76,7 @@ namespace DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId1");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("UserId");
 
@@ -142,7 +139,7 @@ namespace DAL.Migrations
                 {
                     b.HasOne("Domain.Entity.Group", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId1")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

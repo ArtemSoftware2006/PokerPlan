@@ -65,10 +65,7 @@ namespace DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GroupId1")
+                    b.Property<Guid>("GroupId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
@@ -76,7 +73,7 @@ namespace DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId1");
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("UserId");
 
@@ -139,7 +136,7 @@ namespace DAL.Migrations
                 {
                     b.HasOne("Domain.Entity.Group", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId1")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
