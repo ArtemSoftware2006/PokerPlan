@@ -6,7 +6,7 @@ namespace Domain.Entity
         public DateTime DateCreated { get; set; }
         public int Value { get; set; }
         public int UserId { get; set; }
-        public int GroupId { get; set; }
+        public Guid GroupId { get; set; }
         public User User { get; set; }
         public Group Group { get; set; }
     }

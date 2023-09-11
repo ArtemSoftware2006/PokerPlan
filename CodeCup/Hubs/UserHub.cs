@@ -10,10 +10,13 @@ namespace CodeCup.Hubs
         private readonly ILogger<UserHub> _logger;
         private readonly IGroupRepository _groupRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IVoteRepository _voteRepository;
         private List<string> names;
-        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository, IUserRepository userRepository)
+        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository, IUserRepository userRepository, IVoteRepository voteRepository)
         {
             names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
+
+            _voteRepository = voteRepository;
             _userRepository = userRepository;
             _groupRepository = groupRepository;
             _logger = logger;
@@ -21,6 +24,15 @@ namespace CodeCup.Hubs
        
         public async Task CreateGroup(string id)
         {
+            var user = new User() {
+                Name = "Администратор",
+                DateCreated = DateTime.Now,
+                Role = Role.Admin,
+                GroupId = Guid.Parse(id)
+            };
+
+            await _userRepository.CreateAsync(user);
+
             await Groups.AddToGroupAsync(Context.ConnectionId, id);
             await Clients.Group(id).SendAsync("CreateGroup", id);
         }
@@ -53,14 +65,18 @@ namespace CodeCup.Hubs
         {
             //Недоделано создание Vote
             var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
             var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) 
                 && x.Name == username).FirstOrDefault();
 
             var vote = new Vote() {
                 DateCreated = DateTime.Now,
+                GroupId = group.Id,
                 Value = value,
                 UserId = user.Id,
             };
+
+            await _voteRepository.CreateAsync(vote);
         }
     }
 }
