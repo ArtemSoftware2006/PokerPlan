@@ -25,7 +25,7 @@ namespace DAL.Impl
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<IQueryable<User>> GetAllAsync()
+        public IQueryable<User> GetAllAsync()
         {
             return  _dbContext.Users;
         }

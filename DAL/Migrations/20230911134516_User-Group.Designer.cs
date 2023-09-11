@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230911112612_UpdateUserGroup")]
-    partial class UpdateUserGroup
+    [Migration("20230911134516_User-Group")]
+    partial class UserGroup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,9 @@ namespace DAL.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -58,6 +61,8 @@ namespace DAL.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Users");
                 });
@@ -83,56 +88,15 @@ namespace DAL.Migrations
                     b.ToTable("UserGroups");
                 });
 
-            modelBuilder.Entity("Domain.Entity.Vote", b =>
+            modelBuilder.Entity("Domain.Entity.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.HasOne("Domain.Entity.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Value")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("VotingId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("VotingId");
-
-                    b.ToTable("Votes");
-                });
-
-            modelBuilder.Entity("Domain.Entity.Voting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("GroupId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("GroupId1")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId1");
-
-                    b.ToTable("Votings");
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("Domain.Entity.UserGroup", b =>
@@ -152,46 +116,6 @@ namespace DAL.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Entity.Vote", b =>
-                {
-                    b.HasOne("Domain.Entity.User", "User")
-                        .WithMany("Votes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entity.Voting", "Voting")
-                        .WithMany("Votes")
-                        .HasForeignKey("VotingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("Voting");
-                });
-
-            modelBuilder.Entity("Domain.Entity.Voting", b =>
-                {
-                    b.HasOne("Domain.Entity.Group", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-                });
-
-            modelBuilder.Entity("Domain.Entity.User", b =>
-                {
-                    b.Navigation("Votes");
-                });
-
-            modelBuilder.Entity("Domain.Entity.Voting", b =>
-                {
-                    b.Navigation("Votes");
                 });
 #pragma warning restore 612, 618
         }

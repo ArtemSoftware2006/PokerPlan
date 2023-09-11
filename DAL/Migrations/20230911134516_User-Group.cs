@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateUserGroup : Migration
+    public partial class UserGroup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,30 +33,15 @@ namespace DAL.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Role = table.Column<int>(type: "INTEGER", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    GroupId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Votings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    GroupId = table.Column<int>(type: "INTEGER", nullable: false),
-                    GroupId1 = table.Column<Guid>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Votings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Votings_Groups_GroupId1",
-                        column: x => x.GroupId1,
+                        name: "FK_Users_Groups_GroupId",
+                        column: x => x.GroupId,
                         principalTable: "Groups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -88,34 +73,6 @@ namespace DAL.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Votes",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Value = table.Column<int>(type: "INTEGER", nullable: false),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    VotingId = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Votes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Votes_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Votes_Votings_VotingId",
-                        column: x => x.VotingId,
-                        principalTable: "Votings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_UserGroups_GroupId",
                 table: "UserGroups",
@@ -127,19 +84,9 @@ namespace DAL.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Votes_UserId",
-                table: "Votes",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votes_VotingId",
-                table: "Votes",
-                column: "VotingId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Votings_GroupId1",
-                table: "Votings",
-                column: "GroupId1");
+                name: "IX_Users_GroupId",
+                table: "Users",
+                column: "GroupId");
         }
 
         /// <inheritdoc />
@@ -149,13 +96,7 @@ namespace DAL.Migrations
                 name: "UserGroups");
 
             migrationBuilder.DropTable(
-                name: "Votes");
-
-            migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Votings");
 
             migrationBuilder.DropTable(
                 name: "Groups");

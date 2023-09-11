@@ -1,4 +1,6 @@
 using DAL.interfaces;
+using Domain.Entity;
+using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.SignalR;
 using Service.Interfaces;
@@ -9,8 +11,12 @@ namespace CodeCup.Hubs
     {
         private readonly ILogger<UserHub> _logger;
         private readonly IGroupRepository _groupRepository;
-        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository)
+        private readonly IUserRepository _userRepository;
+        private List<string> names;
+        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository, IUserRepository userRepository)
         {
+            names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
+            _userRepository = userRepository;
             _groupRepository = groupRepository;
             _logger = logger;
         }
@@ -24,12 +30,29 @@ namespace CodeCup.Hubs
         public async Task JoinGroupFromLink(string id)
         {
             _logger.LogInformation("Join " + Context.ConnectionId);
+
             var group = await _groupRepository.GetAsync(Guid.Parse(id));
 
-            if (group?.Status == Domain.Enum.StatusEntity.Active)
+            _logger.LogWarning(id);
+
+            var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(id));
+
+            if (countUsers < 6)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", Context.ConnectionId);
+                 var user = new User() {
+                Name = names[countUsers],
+                DateCreated = DateTime.Now,
+                Role = Role.User,
+                GroupId = group.Id
+                };
+
+                await _userRepository.CreateAsync(user);
+
+                if (group?.Status == Domain.Enum.StatusEntity.Active)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+                    await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", user.Name);
+                }   
             }
         }
     }

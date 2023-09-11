@@ -9,6 +9,7 @@ namespace Domain.Entity
         public string Name { get; set; }
         public Role Role { get; set; }
         public DateTime DateCreated { get; set; }
-        public List<Vote> Votes { get; set; }
+        public Guid GroupId { get; set; }
+        public Group Group { get; set; }
     }
 }

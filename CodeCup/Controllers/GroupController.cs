@@ -1,4 +1,5 @@
 using DAL;
+using DAL.Impl;
 using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
@@ -12,9 +13,10 @@ namespace Новая_папка.Controllers
     {
         private readonly ILogger<GroupController> _logger;
         private readonly IGroupRepository _groupRepository;
-
-        public GroupController(ILogger<GroupController> logger, IGroupRepository groupRepository)
+        private readonly IUserRepository _userRepository;
+        public GroupController(ILogger<GroupController> logger, IGroupRepository groupRepository, IUserRepository userRepository)
         {
+            _userRepository = userRepository;
             _groupRepository = groupRepository;
             _logger = logger;
         }
@@ -52,6 +54,13 @@ namespace Новая_папка.Controllers
             try
             {
                 var groupDb = await _groupRepository.GetAsync(Guid.Parse(group));
+
+                var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(group));
+
+                if (!(countUsers < 6))
+                {
+                    return View("NotFound");
+                }
 
                 if (groupDb != null && groupDb?.Status == StatusEntity.Active)
                 {
