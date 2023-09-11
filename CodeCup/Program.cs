@@ -3,12 +3,15 @@ using DAL;
 using DAL.Impl;
 using DAL.interfaces;
 using Microsoft.EntityFrameworkCore;
+using Service.Impl;
+using Service.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IUserGroupRepository, UserGroupRepository>();
+builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlite("Data Source=codeCupDb.db"));
 
