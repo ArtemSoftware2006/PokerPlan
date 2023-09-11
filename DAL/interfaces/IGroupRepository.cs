@@ -9,6 +9,6 @@ namespace DAL.interfaces
         public Task<bool> UpdateAsync(Group entity);
         public Task<bool> DeleteAsync(Group entity);
         public Task<Group> GetAsync(Guid id);
-        public Task<IQueryable<Group>> GetAllAsync();
+        public IQueryable<Group> GetAllAsync();
     }
 }

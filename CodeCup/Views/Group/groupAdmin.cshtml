@@ -14,6 +14,7 @@
     <div class="border border-2 radius-3 p-3 m-2">
         @Model.Link
     </div>
+    <button id="stopBtn">Завершить голосование</button>
 </div>
 
 
@@ -28,10 +29,30 @@
         .withUrl("http://localhost:5010/user")
         .build();
     
-    hubConnection.on("UserAdded", function(username) {
+    hubConnection.on("FinishVoting", function(usersVote) {
+        let messageElement = document.createElement("p");
+        console.log(usersVote)
+        for(let i = 0; i < usersVote.length; i++) {
+            console.log(usersVote[i])
+            let messageElement = document.createElement("p");
+            messageElement.textContent = usersVote[i].name + " Vote " +  usersVote[i].value ;
+            document.getElementById("chatroom").appendChild(messageElement);
+        }
+     
+    });
+
+     hubConnection.on("UserAdded", function(username) {
         let messageElement = document.createElement("p");
         messageElement.textContent = "Added " +  username ;
         document.getElementById("chatroom").appendChild(messageElement);
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", function () {
+        
+        hubConnection.invoke("FinishVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
     });
 
     hubConnection.start()

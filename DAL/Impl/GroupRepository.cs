@@ -26,7 +26,7 @@ namespace DAL.Impl
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
-        public async Task<IQueryable<Group>> GetAllAsync()
+        public IQueryable<Group> GetAllAsync()
         {
             return _dbContext.Groups;
         }

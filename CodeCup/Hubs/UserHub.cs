@@ -2,6 +2,8 @@ using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Новая_папка.Models;
 
 namespace CodeCup.Hubs
 {
@@ -61,22 +63,41 @@ namespace CodeCup.Hubs
                 }   
             }
         }
-        public async Task SetVote(string groupId, string username, int value)
+       
+        public async Task SetVote(CreateVoteVm model)
         {
-            //Недоделано создание Vote
-            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+            var group = await _groupRepository.GetAsync(Guid.Parse(model.GroupId));
 
-            var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) 
-                && x.Name == username).FirstOrDefault();
+            var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(model.GroupId) 
+                && x.Name == model.Username).FirstOrDefault();
 
             var vote = new Vote() {
                 DateCreated = DateTime.Now,
                 GroupId = group.Id,
-                Value = value,
+                Value = int.Parse(model.Value),
                 UserId = user.Id,
             };
 
             await _voteRepository.CreateAsync(vote);
+
+        }
+
+        public async Task FinishVoting(string groupId)
+        {
+            var usersVotes = (
+                from vote in _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId))
+                join user in _userRepository.GetAllAsync()
+                    on  new {UserId = vote.UserId, vote.GroupId} 
+                    equals new {UserId = user.Id, user.GroupId}
+                select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
+
+           
+            //var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+            //group.Status = StatusEntity.Closed;
+
+            //await _groupRepository.UpdateAsync(group);
+            
+            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes);
         }
     }
 }
