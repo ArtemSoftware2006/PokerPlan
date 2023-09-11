@@ -6,28 +6,50 @@
     string guidValue = Model.Name.ToString();
 }
 <div>
-    @Model.Name
+    <div class="border border-2 radius-3 p-3 m-2">
+        @Model.Link
+    </div>
+
+    <label>Пользователь</label>
+    <p id="CurrentName"></p>
+
+    <input id="numId" type="input" placeholder="Выбрать значение"/>
+    <button id="sendBtn" >Проголосовать</button>
+
 </div>
 
 <div id="chatroom"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script>
+    let groupId = '@Html.Raw(guidValue)';
+    let currentUsername = ""
 
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
         .build();
     
-     hubConnection.on("UserAdded", function(username) {
+    hubConnection.on("UserAdded", function(username) {
+        if(currentUsername === "") {
+            currentUsername = username
+            document.getElementById("CurrentName").textContent = currentUsername ;
+
+        }
         let messageElement = document.createElement("p");
         messageElement.textContent = "Added " +  username ;
         document.getElementById("chatroom").appendChild(messageElement);
     });
 
+     document.getElementById("sendBtn").addEventListener("click", function () {
+        let value = document.getElementById("numId").value
+        hubConnection.invoke("SendMessage", groupId, message, value)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    });
+
     hubConnection.start()
         .then(function () {
-            let groupId = '@Html.Raw(guidValue)';
-
             hubConnection.invoke("JoinGroupFromLink", groupId)
             .catch(function (err) {
                 return console.error(err.toString());

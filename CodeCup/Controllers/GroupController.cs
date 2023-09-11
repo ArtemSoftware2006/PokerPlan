@@ -53,6 +53,8 @@ namespace Новая_папка.Controllers
         {
             try
             {
+                string link = "http://localhost:5010/Group/Join/" + group;
+
                 var groupDb = await _groupRepository.GetAsync(Guid.Parse(group));
 
                 var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(group));
@@ -64,7 +66,7 @@ namespace Новая_папка.Controllers
 
                 if (groupDb != null && groupDb?.Status == StatusEntity.Active)
                 {
-                    return View("groupUser", new GroupVm() {Name = group});
+                    return View("groupUser", new GroupVm() {Name = group, Link = link});
                 }
                 
                 return View("NotFound");

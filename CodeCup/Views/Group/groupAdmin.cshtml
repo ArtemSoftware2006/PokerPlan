@@ -6,6 +6,8 @@
     string guidValue = Model.Id.ToString();
 }
 <div class="d-flex flex-column m-2 justefy-content-center text-center">
+    <label>Пользователь</label>
+    <div>Администратор</div>
     <div class="p-2">
         @Model.Name
     </div>
@@ -20,6 +22,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script>
 
+    let groupId = '@Html.Raw(guidValue)';
+
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
         .build();
@@ -32,8 +36,6 @@
 
     hubConnection.start()
         .then(function () {
-            let groupId = '@Html.Raw(guidValue)';
-
             hubConnection.invoke("CreateGroup", groupId)
             .catch(function (err) {
                 return console.error(err.toString());
