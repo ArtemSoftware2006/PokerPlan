@@ -51,6 +51,7 @@ namespace CodeCup.Hubs
         }
         public async Task SetVote(string groupId, string username, int value)
         {
+            //Недоделано создание Vote
             var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
             var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) 
                 && x.Name == username).FirstOrDefault();
