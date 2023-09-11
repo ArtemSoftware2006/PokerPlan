@@ -1,4 +1,7 @@
 using DAL;
+using DAL.interfaces;
+using Domain.Entity;
+using Domain.Enum;
 using Microsoft.AspNetCore.Mvc;
 using Новая_папка.Models;
 
@@ -8,12 +11,12 @@ namespace Новая_папка.Controllers
     public class GroupController : Controller
     {
         private readonly ILogger<GroupController> _logger;
-        private readonly AppDbContext _dbContext ;
+        private readonly IGroupRepository _groupRepository;
 
-        public GroupController(ILogger<GroupController> logger, AppDbContext dbContext)
+        public GroupController(ILogger<GroupController> logger, IGroupRepository groupRepository)
         {
+            _groupRepository = groupRepository;
             _logger = logger;
-            _dbContext = dbContext;
         }
 
         public IActionResult Index()
@@ -32,11 +35,35 @@ namespace Новая_папка.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult CreateGroup(string name) 
+        public async Task<IActionResult> CreateGroup(string name) 
         {
-            string link = "http://localhost:5010/Group/Join/" + Guid.NewGuid();
+            Guid id = Guid.NewGuid();
+            string link = "http://localhost:5010/Group/Join/" + id;
+            await  _groupRepository.CreateAsync(new Group() 
+            {
+                DateCreated = DateTime.Now, Id = id, Name = name, Status = StatusEntity.Active
+            });
 
             return View("groupAdmin", new GroupVm() {Name = name, Link = link});
+        }
+        [HttpGet("{group}")]
+        public async Task<IActionResult> Join(string group)
+        {
+            try
+            {
+                var groupDb = await _groupRepository.GetAsync(Guid.Parse(group));
+
+                if (groupDb != null && groupDb?.Status == StatusEntity.Active)
+                {
+                    return View("groupUser", new GroupVm() {Name = groupDb.Name});
+                }
+                return View("NotFound");
+            }
+            catch (System.Exception)
+            {
+                return View("NotFound");
+            }
+            
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
