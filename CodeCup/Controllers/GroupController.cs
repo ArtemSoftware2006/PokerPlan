@@ -36,9 +36,7 @@ namespace Новая_папка.Controllers
         {
             string link = "http://localhost:5010/Group/Join/" + Guid.NewGuid();
 
-            
-
-            return View("group", new GroupVm() {Name = name, Link = link});
+            return View("groupAdmin", new GroupVm() {Name = name, Link = link});
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
