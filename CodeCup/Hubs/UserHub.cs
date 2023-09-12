@@ -91,7 +91,7 @@ namespace CodeCup.Hubs
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
             
-            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, );
+            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes);
         }
         
         public async Task StartNewVoting(string groupId) 
