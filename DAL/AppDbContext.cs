@@ -14,7 +14,9 @@ namespace DAL
         public AppDbContext() => Database.EnsureCreated();
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
-         { }
+         { 
+            Database.EnsureCreated();
+         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connectionString = @"Data Source=codeCupDb.db";
