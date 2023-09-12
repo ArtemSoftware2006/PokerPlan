@@ -90,14 +90,18 @@ namespace CodeCup.Hubs
                     on  new {UserId = vote.UserId, vote.GroupId} 
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
-
-           
-            //var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
-            //group.Status = StatusEntity.Closed;
-
-            //await _groupRepository.UpdateAsync(group);
             
-            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes);
+            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, );
+        }
+        
+        public async Task StartNewVoting(string groupId) 
+        {
+            var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));
+
+            await votes.ForEachAsync(async x => await _voteRepository.DeleteAsync(x));
+
+            await Clients.Group(groupId).SendAsync("StartNewVoting");
+
         }
     }
 }
