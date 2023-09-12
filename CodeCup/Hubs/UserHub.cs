@@ -90,6 +90,10 @@ namespace CodeCup.Hubs
                     on  new {UserId = vote.UserId, vote.GroupId} 
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
+
+            double average  = Math.Round(usersVotes.Average(x => x.Value),1);
+
+            _logger.LogError(average.ToString());
             
             await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes);
         }
