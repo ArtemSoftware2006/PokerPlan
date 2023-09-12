@@ -67,7 +67,7 @@
 
     <div class="m-3">
         <button class="btn--blue" id="stopBtn">Завершить голосование</button>
-        <button class="btn--blue" id="newVotingBtn">Начать заново</button>
+        <button class="btn--blue d-none" id="newVotingBtn">Начать заново</button>
     </div>
 
     <div id="chatroom"></div>
@@ -79,6 +79,9 @@
 <script>
 
     let groupId = '@Html.Raw(guidValue)';
+    let isVotingStopped = false;
+    let stopBtn = document.getElementById("stopBtn")
+    let newVotingBtn = document.getElementById("newVotingBtn")
 
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
@@ -93,16 +96,28 @@
             messageElement.textContent = usersVote[i].name + " Vote " +  usersVote[i].value ;
             document.getElementById("chatroom").appendChild(messageElement);
         }
+
+        newVotingBtn.classList.remove("d-none")
+        stopBtn.classList.add("d-none")
+
      
     });
 
-     hubConnection.on("UserAdded", function(username) {
+    hubConnection.on("UserAdded", function(username) {
         let messageElement = document.createElement("p");
         messageElement.textContent = "Added " +  username ;
         document.getElementById("chatroom").appendChild(messageElement);
     });
 
-    document.getElementById("stopBtn").addEventListener("click", function () {
+    newVotingBtn.addEventListener("click", function () {
+        hubConnection.invoke("StartNewVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+        stopBtn.classList.remove("d-none")
+        newVotingBtn.classList.add("d-none")
+    });
+    stopBtn.addEventListener("click", function () {
         hubConnection.invoke("FinishVoting", groupId)
             .catch(function (err) {
                 return console.error(err.toString());

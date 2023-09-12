@@ -91,11 +91,9 @@ namespace CodeCup.Hubs
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
 
-            double average  = Math.Round(usersVotes.Average(x => x.Value),1);
-
-            _logger.LogError(average.ToString());
+            double average = usersVotes.Count != 0 ? Math.Round(usersVotes.Average(x => x.Value),1) : 0;
             
-            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes);
+            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average);
         }
         
         public async Task StartNewVoting(string groupId) 
