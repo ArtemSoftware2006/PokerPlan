@@ -46,9 +46,12 @@ html {
 }
 
 .table {
-  width: 90%; 
-  height: 30%;
-  background: #4FC1EB;
-  border-radius: 50%;
-  margin: auto;
+  width: 657px; 
+  height: 229px;
+  background: #b3bdc0;
+  border-radius: 200px;
+  opacity: 30%;
+  margin: 20px auto ;
+  background-position: center;
+  border: 2px solid #808687;
 }
