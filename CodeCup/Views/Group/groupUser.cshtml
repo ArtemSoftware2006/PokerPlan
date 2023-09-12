@@ -84,6 +84,10 @@
         document.getElementById("chatroom").appendChild(messageElement);
     });
 
+     hubConnection.on("CloseGroup", function(username) {
+        window.location.href = '/Error/GroupClosed';
+    });
+
     hubConnection.start()
         .then(function () {
             hubConnection.invoke("JoinGroupFromLink", groupId)

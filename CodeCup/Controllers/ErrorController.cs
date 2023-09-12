@@ -6,4 +6,8 @@ public class ErrorController : Controller
     {
         return View();
     }
+    public IActionResult GroupClosed()
+    {
+        return View();
+    }
 }

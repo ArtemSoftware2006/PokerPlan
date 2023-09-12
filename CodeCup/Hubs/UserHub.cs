@@ -114,8 +114,6 @@ namespace CodeCup.Hubs
 
             await _groupRepository.UpdateAsync(group);
 
-            _logger.LogInformation("Группа закрыта!!!!!!!!");
-
             await Clients.Group(groupId).SendAsync("CloseGroup");
         }
     }
