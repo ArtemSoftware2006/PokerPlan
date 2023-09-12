@@ -36,6 +36,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseStatusCodePagesWithReExecute("/Error/NotFound/{0}");
 
 app.MapHub<UserHub>("/user");
 

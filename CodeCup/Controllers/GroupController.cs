@@ -54,7 +54,7 @@ namespace Новая_папка.Controllers
 
                 if (!(countUsers < 6))
                 {
-                    return View("NotFound");
+                    return Redirect("/Error/NotFound");
                 }
 
                 if (groupDb != null && groupDb?.Status == StatusEntity.Active)
@@ -62,11 +62,11 @@ namespace Новая_папка.Controllers
                     return View("groupUser", new GroupVm() {Name = group, Link = link});
                 }
                 
-                return View("NotFound");
+                return Redirect("/Error/NotFound");
             }
             catch (System.Exception)
             {
-                return View("NotFound");
+                return Redirect("/Error/NotFound");
             }
             
         }
