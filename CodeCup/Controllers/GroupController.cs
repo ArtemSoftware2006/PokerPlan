@@ -28,8 +28,10 @@ namespace Новая_папка.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGroup(string name) 
         {
+            string domainName = Request.Host.Value;
+
             Guid id = Guid.NewGuid();
-            string link = "http://localhost:5010/Group/Join/" + id;
+            string link = domainName  + "/Group/Join/" + id;
             await  _groupRepository.CreateAsync(new Group() 
             {
                 DateCreated = DateTime.Now, Id = id, Name = name, Status = StatusEntity.Active
@@ -42,7 +44,9 @@ namespace Новая_папка.Controllers
         {
             try
             {
-                string link = "http://localhost:5010/Group/Join/" + group;
+                string domainName = Request.Host.Value;
+
+                string link = domainName + "/Group/Join/" + group;
 
                 var groupDb = await _groupRepository.GetAsync(Guid.Parse(group));
 
