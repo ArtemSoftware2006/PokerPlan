@@ -6,19 +6,61 @@
     string guidValue = Model.Id.ToString();
 }
 <div class="d-flex flex-column m-2 justefy-content-center text-center">
-    <label>Пользователь</label>
-    <div>Администратор</div>
-    <div class="p-2">
-        @Model.Name
-    </div>
-    <div class="border border-2 radius-3 p-3 m-2">
-        @Model.Link
-    </div>
-    <button id="stopBtn">Завершить голосование</button>
-</div>
 
+    <div class="d-flex justify-content-between">
+        <div style="font-size: 30px;">Администратор</div>
+        <button type="button" class="btn--blue" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+            Пригласить
+        </button>
+    </div>
 
-<div id="chatroom"></div>
+    <div class="p-2" style="font-size: 40px;">
+            @Model.Name
+        </div>
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="d-flex flex-column modal-body">
+
+                    <div class="p-1 m-2 addLink--container">
+                        @Model.Link
+                    </div>
+                    <button type="button" class="m-2 flex-grow-1 btn--blue">Копировать</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-around">
+        <div class="cirle"></div>
+        <div class="cirle"></div>
+        <div class="cirle"></div>
+    </div>
+
+    <div class="container">
+        <div class="table"></div>
+    </div>
+
+    <div class="d-flex justify-content-around">
+        <div class="cirle"></div>
+        <div class="cirle"></div>
+        <div class="cirle"></div>
+    </div>
+
+    </div class="m-3">
+        <button class="btn--blue" id="stopBtn">Завершить голосование</button>
+    </div>
+
+    <div id="chatroom"></div>
+ </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script>

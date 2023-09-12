@@ -15,7 +15,9 @@
       "applicationUrl": "http://localhost:5010",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "launchUrl": "http://localhost:5010/Group/CreateGroup"
+
     },
     "https": {
       "commandName": "Project",

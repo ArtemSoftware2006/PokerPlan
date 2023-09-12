@@ -21,16 +21,6 @@ namespace Новая_папка.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-        [Route("{group}")]
-        public IActionResult CreateLinkGroup(Guid group)
-        {
-            _logger.LogInformation(group.ToString());
-            return View("CreateLinkGroup", new GroupModel() {Id = group});
-        }
         [HttpGet]
         public IActionResult CreateGroup() 
         {

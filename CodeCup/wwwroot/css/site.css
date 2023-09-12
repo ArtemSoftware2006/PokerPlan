@@ -19,3 +19,31 @@ html {
 .form--input {
   width: 50%;
 }
+
+.addLink--container {
+  border-radius: 5px;
+  border: 1px solid black;
+}
+
+.btn--blue {
+  background-color: #4FC1EB;
+  padding: 7px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
+.cirle {
+  border-radius: 50%;
+  border: 1px solid black;
+  width: 70px; 
+  height: 70px;
+  background: #4FC1EB;
+}
+
+.table {
+  width: 90%; 
+  height: 30%;
+  background: #4FC1EB;
+  border-radius: 50%;
+  margin: auto;
+}
