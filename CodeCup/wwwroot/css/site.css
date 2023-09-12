@@ -32,6 +32,11 @@ html {
   border-radius: 5px;
 }
 
+.btn--blue--clicked {
+  background-color: #0689b9;
+}
+
+
 .cirle {
   border-radius: 50%;
   border: 1px solid black;

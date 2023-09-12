@@ -10,6 +10,10 @@
         @Model.Link
     </div>
 
+     <button type="button" class="btn--blue" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        Пригласить
+    </button>
+
     <label>Пользователь</label>
     <p id="CurrentName"></p>
 
@@ -20,7 +24,30 @@
 
 <div id="chatroom"></div>
 
+<div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="d-flex flex-column modal-body">
+
+                <div id="linkToCopy" class="p-1 m-2 addLink--container">
+                    @Model.Link
+                </div>
+
+                <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Копировать</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
     let groupId = "@Html.Raw(guidValue)";
     let currentUsername = ""
@@ -71,5 +98,14 @@
         .catch(function (err) {
             return console.error(err.toString());
         });
+
+    var clipboard = new ClipboardJS('#copyBtn');
+
+    clipboard.on('success', function(e) {
+        e.clearSelection();
+         var copyBtn = document.getElementById("copyBtn");
+        copyBtn.classList.add("btn--blue--clicked")
+        copyBtn.textContent = "Скопированно"
+    });
     
 </script>
