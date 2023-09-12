@@ -5,18 +5,28 @@
 @{
     string guidValue = Model.Id.ToString();
 }
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white box-shadow mb-3">
+        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+
+            <div class="d-flex justify-content-center">
+                <img class="me-1" src="@Url.Content("~/eagle.png")" alt="Орел">
+                <div style="font-size: 30px;font-family: 'Montserrat'">@Model.Name</div>
+            </div>
+
+            <div class="d-flex justify-content-center align-items-center">
+                <div style="font-size: 26px;">Администратор</div>
+                <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Пригласить
+                </button>
+            </div>
+         
+        </div>
+    </nav>
+</header>
+
 <div class="d-flex flex-column m-2 justefy-content-center text-center">
-
-    <div class="d-flex justify-content-between">
-        <div style="font-size: 30px;">Администратор</div>
-        <button type="button" class="btn--blue" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-            Пригласить
-        </button>
-    </div>
-
-    <div class="p-2" style="font-size: 40px;">
-        @Model.Name
-    </div>
 
     <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
