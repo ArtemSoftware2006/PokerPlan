@@ -107,5 +107,12 @@ namespace CodeCup.Hubs
             await Clients.Group(groupId).SendAsync("StartNewVoting");
 
         }
+        public async Task CloseGroup(string groupId)
+        {
+            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+            group.Status = StatusEntity.Closed;
+
+            await Clients.Group(groupId).SendAsync("CloseGroup");
+        }
     }
 }
