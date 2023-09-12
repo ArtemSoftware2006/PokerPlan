@@ -103,12 +103,18 @@
     });
 
     document.getElementById("stopBtn").addEventListener("click", function () {
-        
         hubConnection.invoke("FinishVoting", groupId)
             .catch(function (err) {
                 return console.error(err.toString());
             });
     });
+
+    window.onbeforeunload = function() {
+        hubConnection.invoke("CloseGroup", groupId)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
 
     hubConnection.start()
         .then(function () {
@@ -131,6 +137,7 @@
         copyBtn.classList.add("btn--blue--clicked")
         copyBtn.textContent = "Скопированно"
     });
+
 
     
 </script>

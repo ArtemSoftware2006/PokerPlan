@@ -112,6 +112,10 @@ namespace CodeCup.Hubs
             var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
             group.Status = StatusEntity.Closed;
 
+            await _groupRepository.UpdateAsync(group);
+
+            _logger.LogInformation("Группа закрыта!!!!!!!!");
+
             await Clients.Group(groupId).SendAsync("CloseGroup");
         }
     }
