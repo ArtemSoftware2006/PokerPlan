@@ -20,7 +20,6 @@ namespace Новая_папка.Controllers
             _groupRepository = groupRepository;
             _logger = logger;
         }
-
         [HttpGet]
         public IActionResult CreateGroup() 
         {

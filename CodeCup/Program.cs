@@ -41,6 +41,6 @@ app.MapHub<UserHub>("/user");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Group}/{action=CreateGroup}");
+    pattern: "{controller=Group}/{action=CreateGroup}/{id?}");
  
 app.Run();
