@@ -134,7 +134,7 @@
     let newVotingBtn = document.getElementById("newVotingBtn")
     var cardDivs = document.querySelectorAll('.card--vote');
     var averageDiv = document.getElementById('average');
-    let userCards = document.getElementsByClassName("card--container");
+    let userCards = document.querySelectorAll(".card--container");
     let cardsVoting = document.querySelectorAll(".card--vote");
     let usersInGroup = []
     let value = 0;
@@ -177,17 +177,28 @@
         for(let i = 0; i < usersVote.length; i++) {
             console.log(usersVote[i])
         }
+
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
 
         newVotingBtn.classList.remove("d-none")
         stopBtn.classList.add("d-none")
+
+        userCards.forEach(function(userCard) {
+            userCard.children[0].classList.add("card--add--user--value");
+            userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+        });
     });
 
     hubConnection.on("StartNewVoting", function(usersVote, average) {
         
         cardsVoting.forEach(function(card) {
             card.classList.remove("d-none");
+        });
+
+        userCards.forEach(function(userCard) {
+            userCard.children[0].classList.remove("card--add--user--value");
+            userCard.children[0].textContent = "";
         });
 
     });

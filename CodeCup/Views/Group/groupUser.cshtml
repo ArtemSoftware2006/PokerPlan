@@ -134,7 +134,7 @@
     var averageDiv = document.getElementById('average');
     var logoutBtn = document.getElementById('logout');
     let usersInGroup = []
-    let userCards = document.getElementsByClassName("card--container");
+    let userCards = document.querySelectorAll(".card--container");
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -171,18 +171,28 @@
 
     hubConnection.on("StartNewVoting", function() {
         averageDiv.classList.add("d-none")
-         cardsVoting.forEach(function(card) {
+        cardsVoting.forEach(function(card) {
             card.classList.remove("d-none");
+        });
+
+        userCards.forEach(function(userCard) {
+            userCard.children[0].classList.remove("card--add--user--value");
+            userCard.children[0].textContent = "";
         });
      
     });
     hubConnection.on("FinishVoting", function(usersVote, average) {
-         cardsVoting.forEach(function(card) {
+        cardsVoting.forEach(function(card) {
             card.classList.add("d-none");
         });
 
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
+
+        userCards.forEach(function(userCard) {
+            userCard.children[0].classList.add("card--add--user--value");
+            userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+        });
      
     });
 
@@ -227,7 +237,7 @@
             }
         }
     });
-    
+
     hubConnection.on("CloseGroup", function(username) {
         window.location.href = '/Error/GroupClosed';
     });
