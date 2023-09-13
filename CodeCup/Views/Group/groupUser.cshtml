@@ -52,8 +52,11 @@
                 <div class="card me-1"></div>
             </div>
 
-            <div class="table">
-                <img style=" filter: brightness(-100%)" src="@Url.Content("~/sunny.png")" alt="Солнце">
+            <div style=" position: relative; display: inline-block;">
+                <div class="table">
+                    <img style=" filter: brightness(-100%)" src="@Url.Content("~/sunny.png")" alt="Солнце">
+                </div>
+                 <div id="average" class="d-none table--button cifra-average"></div>
             </div>
 
             <div class="flex-grow-1">
@@ -72,7 +75,7 @@
     <div class="mt-4 d-flex justify-content-between">
         <div class="card--vote m-1">0</div>
         <div class="card--vote m-1">1</div>
-        <div class="card--vote card--vote--active m-1">2</div>
+        <div class="card--vote m-1">2</div>
         <div class="card--vote m-1">3</div>
         <div class="card--vote m-1">5</div>
         <div class="card--vote m-1">8</div>
@@ -116,6 +119,7 @@
     let currentUsername = ""
     var cardDivs = document.querySelectorAll('.card--vote');
     let value = 0;
+    var averageDiv = document.getElementById('average');
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -144,8 +148,13 @@
             });
     }); *@
 
-    hubConnection.on("FinishVoting", function(usersVote) {
-
+    hubConnection.on("StartNewVoting", function() {
+        averageDiv.classList.add("d-none")
+     
+    });
+    hubConnection.on("FinishVoting", function(usersVote, average) {
+        averageDiv.textContent = average;
+        averageDiv.classList.remove("d-none")
      
     });
 
