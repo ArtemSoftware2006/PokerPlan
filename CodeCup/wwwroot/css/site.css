@@ -92,5 +92,18 @@ html {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  opacity: 1;
+}
+
+.table--bottom {
+  position: absolute;
+  left: 50%;
+  top: 75%;
+  transform: translate(-50%, -50%);
+}
+
+.cifra-average {
+  font-size: 40px;
+  font-weight: 600;
+  font-family: "Montserrat";
+  color: #4FC1EB;
 }

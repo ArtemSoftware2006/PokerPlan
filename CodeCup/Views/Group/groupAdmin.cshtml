@@ -74,13 +74,14 @@
                 <div class="card me-1"></div>
             </div>
 
-            <div style="  position: relative; display: inline-block;">
+            <div style=" position: relative; display: inline-block;">
                 <div class="table">
                     <img style=" filter: brightness(-100%);" src="@Url.Content("~/sunny.png")" alt="Солнце">
                 </div>
                 <div class="m-3 relative">
                     <button class="btn--blue table--button " id="stopBtn">Завершить голосование</button>
-                    <button class="btn--blue d-none table--button " id="newVotingBtn">Начать заново</button>
+                    <div id="average" class="d-none table--button cifra-average"></div>
+                    <button class="btn--blue d-none table--bottom " id="newVotingBtn">Начать заново</button>
                 </div>
             </div>
 
@@ -125,7 +126,9 @@
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
     var cardDivs = document.querySelectorAll('.card--vote');
+    var averageDiv = document.getElementById('average');
     let value = 0;
+    let average = 0;
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -146,15 +149,13 @@
         .withUrl("http://localhost:5010/user")
         .build();
     
-    hubConnection.on("FinishVoting", function(usersVote) {
-        let messageElement = document.createElement("p");
-        console.log(usersVote)
+    hubConnection.on("FinishVoting", function(usersVote, average) {
+
         for(let i = 0; i < usersVote.length; i++) {
             console.log(usersVote[i])
-            let messageElement = document.createElement("p");
-            messageElement.textContent = usersVote[i].name + " Vote " +  usersVote[i].value ;
-            document.getElementById("chatroom").appendChild(messageElement);
         }
+        averageDiv.textContent = average;
+        averageDiv.classList.remove("d-none")
 
         newVotingBtn.classList.remove("d-none")
         stopBtn.classList.add("d-none")
@@ -179,6 +180,7 @@
             .catch(function (err) {
                 return console.error(err.toString());
             });
+        averageDiv.classList.add("d-none")
         stopBtn.classList.remove("d-none")
         newVotingBtn.classList.add("d-none")
     });
