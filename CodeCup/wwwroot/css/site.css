@@ -45,13 +45,24 @@ html {
   background: #4FC1EB;
 }
 
+.card {
+  width: 60px;
+  height: 86px;
+  border-radius: 8px;
+  background-color: #F2F5F7;
+  border: 1px solid #656969;
+  padding: 32px 12px 32px 12px;
+}
+.cirle--margin {
+  margin: 0px 150px;
+}
 .table {
   width: 657px; 
   height: 229px;
   background: #b3bdc0;
   border-radius: 200px;
   opacity: 30%;
-  margin: 20px auto ;
+  margin: 20px 5px ;
   background-position: center;
-  border: 2px solid #808687;
+  border: 5px solid #656969;
 }
