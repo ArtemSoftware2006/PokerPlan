@@ -139,10 +139,10 @@
     let usersInGroup = []
     let value = 0;
     let average = 0;
-    let currentUsername = "Администратор"
+    let currentUsername = {name : "Администратор", id : 0}
     let isVoting = true;
 
-    document.getElementById("CurrentName").textContent = currentUsername
+    document.getElementById("CurrentName").textContent = currentUsername.name
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -156,7 +156,7 @@
                 value = cardDiv.textContent
             }
 
-             hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername})
+             hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -194,7 +194,10 @@
 
     hubConnection.on("UserAdded", function(users) {
 
-        console.log(users)
+        if(currentUsername.name === "") {
+            currentUsername = users[users.length - 1]
+            document.getElementById("CurrentName").textContent = currentUsername.name ;
+        }   
 
         for(let i = 0; i < users.length; i++) {
 
@@ -217,10 +220,10 @@
     });
 
     document.getElementById("logout").addEventListener("click", function () {
-        @* hubConnection.invoke("Logout", groupId)
+        hubConnection.invoke("Logout", groupId)
             .catch(function (err) {
                 return console.error(err.toString());
-            }); *@
+            });
 
     });
 

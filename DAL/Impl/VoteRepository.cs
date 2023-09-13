@@ -20,9 +20,30 @@ namespace DAL.Impl
 
         public async Task<bool> DeleteAsync(Vote entity)
         {
-            _dbContext.Remove(entity);
+            using (var transaction = _dbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    _dbContext.Remove(entity);
 
-            return await _dbContext.SaveChangesAsync() > 0;
+                    bool res =  await _dbContext.SaveChangesAsync() > 0;
+                    await transaction.CommitAsync();
+
+                    return res;
+                }
+                catch (System.Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        public bool DeleteRow(List<Vote> entities)
+        {
+            _dbContext.RemoveRange(entities);
+
+            return _dbContext.SaveChanges() > 0;
         }
 
         public IQueryable<Vote> GetAllAsync()

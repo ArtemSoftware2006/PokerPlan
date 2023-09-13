@@ -16,7 +16,7 @@ var config = conf_builder.Build();
 
 var connection = config["ConnectionStrings:DefaultConnection"];
 
-builder.Services.AddDbContext<AppDbContext>(option => option.UseMySql(connection,new MySqlServerVersion(new Version(8, 0, 31))));
+builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection,new MySqlServerVersion(new Version(8, 0, 31))),10);
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();

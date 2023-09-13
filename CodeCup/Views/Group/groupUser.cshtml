@@ -127,7 +127,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
     let groupId = "@Html.Raw(guidValue)";
-    let currentUsername = ""
+    let currentUsername = {name : "" , id : 0}
     var cardDivs = document.querySelectorAll('.card--vote');
     let cardsVoting = document.querySelectorAll(".card--vote");
     let value = 0;
@@ -147,7 +147,7 @@
                 value = cardDiv.textContent
             }
 
-            hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername})
+            hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -186,9 +186,9 @@
 
     hubConnection.on("UserAdded", function(users) {
 
-        if(currentUsername === "") {
-            currentUsername = users[users.length - 1].name
-            document.getElementById("CurrentName").textContent = currentUsername ;
+        if(currentUsername.name === "") {
+            currentUsername = users[users.length - 1]
+            document.getElementById("CurrentName").textContent = currentUsername.name ;
         }   
 
         for(let i = 0; i < users.length; i++) {

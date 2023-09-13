@@ -119,7 +119,9 @@ namespace CodeCup.Hubs
         {
             var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));
 
-            await votes.ForEachAsync(async x => await _voteRepository.DeleteAsync(x));
+            //await votes.ForEachAsync(async x => await _voteRepository.DeleteAsync(x));
+
+           _voteRepository.DeleteRow(votes.ToList());
 
             await Clients.Group(groupId).SendAsync("StartNewVoting");
 
