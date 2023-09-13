@@ -139,7 +139,7 @@
     let usersInGroup = []
     let value = 0;
     let average = 0;
-    let currentUsername = {name : "Администратор", id : 0}
+    let currentUsername = {name : "Администратор", id : "0"}
     let isVoting = true;
 
     document.getElementById("CurrentName").textContent = currentUsername.name
@@ -190,6 +190,22 @@
             card.classList.remove("d-none");
         });
 
+    });
+
+    hubConnection.on("Logout", function(userId) {
+        
+
+        let deleteUser = usersInGroup.find(user => user.id == userId); 
+
+        usersInGroup = usersInGroup.filter(user => user.id != userId);
+
+        for(let i = 0; i < userCards.length; i++) {
+
+            if(userCards[i]?.children[1]?.textContent == deleteUser.name) {
+                userCards[i].children[0].classList.remove("card--add--user");
+                userCards[i].children[1].remove()
+            }
+        }
     });
 
     hubConnection.on("UserAdded", function(users) {

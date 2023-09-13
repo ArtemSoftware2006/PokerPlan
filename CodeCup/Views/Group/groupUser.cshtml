@@ -24,7 +24,7 @@
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
                         <li>
-                            <a class="dropdown-item" id="logout" href="@Url.Action("CreateGroup", "Group")">Выйти</a>
+                            <a class="dropdown-item" id="logout" href="#">Выйти</a>
                         </li>
                     </ul>
                 </div>
@@ -132,6 +132,7 @@
     let cardsVoting = document.querySelectorAll(".card--vote");
     let value = 0;
     var averageDiv = document.getElementById('average');
+    var logoutBtn = document.getElementById('logout');
     let usersInGroup = []
     let userCards = document.getElementsByClassName("card--container");
 
@@ -154,18 +155,19 @@
         });
     });
 
-
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
         .build();
 
-    @* document.getElementById("sendBtn").addEventListener("click", function () {
-        
-        hubConnection.invoke("SetVote", {"Value" : number, "GroupId" : groupId, "Username" : currentUsername})
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-    }); *@
+    
+    logoutBtn.addEventListener("click", function() {
+
+        hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+        window.location.href = "/Group/CreateGroup";
+    })
 
     hubConnection.on("StartNewVoting", function() {
         averageDiv.classList.add("d-none")
@@ -193,9 +195,6 @@
 
         for(let i = 0; i < users.length; i++) {
 
-            console.log(users);
-            console.log(usersInGroup)
-
             if(!usersInGroup.some(user => user.id === users[i].id)) {
                 usersInGroup.push(users[i]);
 
@@ -214,6 +213,21 @@
         }
     });
 
+    hubConnection.on("Logout", function(userId) {
+
+        let deleteUser = usersInGroup.find(user => user.id == userId); 
+
+        usersInGroup = usersInGroup.filter(user => user.id != userId);
+
+        for(let i = 0; i < userCards.length; i++) {
+
+            if(userCards[i]?.children[1]?.textContent == deleteUser.name) {
+                userCards[i].children[0].classList.remove("card--add--user");
+                userCards[i].children[1].remove()
+            }
+        }
+    });
+    
     hubConnection.on("CloseGroup", function(username) {
         window.location.href = '/Error/GroupClosed';
     });

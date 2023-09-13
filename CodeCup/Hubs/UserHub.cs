@@ -51,27 +51,28 @@ namespace CodeCup.Hubs
         {
             var group = await _groupRepository.GetAsync(Guid.Parse(id));
 
-            var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(id));
+            var userNames = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
 
-            if (countUsers < 6)
+            var maybeNames = names.Except(userNames).ToList();
+
+            
+            var user = new User() {
+            Name = maybeNames[0],
+            DateCreated = DateTime.Now,
+            Role = Role.User,
+            GroupId = group.Id
+            };
+
+            await _userRepository.CreateAsync(user);
+
+            var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserVm() {Name = x.Name, Id = x.Id}).ToList();
+
+            if (group?.Status == Domain.Enum.StatusEntity.Active)
             {
-                var user = new User() {
-                Name = names[countUsers],
-                DateCreated = DateTime.Now,
-                Role = Role.User,
-                GroupId = group.Id
-                };
-
-                await _userRepository.CreateAsync(user);
-
-                var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserVm() {Name = x.Name, Id = x.Id}).ToList();
-
-                if (group?.Status == Domain.Enum.StatusEntity.Active)
-                {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                    await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users);
-                }   
-            }
+                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users);
+            }   
+            
         }
        
         public async Task SetVote(CreateVoteVm model)
@@ -119,8 +120,6 @@ namespace CodeCup.Hubs
         {
             var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));
 
-            //await votes.ForEachAsync(async x => await _voteRepository.DeleteAsync(x));
-
            _voteRepository.DeleteRow(votes.ToList());
 
             await Clients.Group(groupId).SendAsync("StartNewVoting");
@@ -136,12 +135,16 @@ namespace CodeCup.Hubs
             await Clients.Group(groupId).SendAsync("CloseGroup");
         }
         public async Task Logout(string groupId, string userId) 
-        {
+        {            
             var user = await _userRepository.GetAsync(int.Parse(userId));
 
             if (user != null)
             {
                 await _userRepository.DeleteAsync(user);
+
+                var votes = _voteRepository.GetAllAsync().Where(x => x.UserId == user.Id && x.GroupId == Guid.Parse(groupId));
+
+                _voteRepository.DeleteRow(votes.ToList());
 
                 await Clients.Group(groupId).SendAsync("Logout", userId);
             }
