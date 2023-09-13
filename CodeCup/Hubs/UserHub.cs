@@ -36,7 +36,7 @@ namespace CodeCup.Hubs
             await _userRepository.CreateAsync(user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, id);
-            await Clients.Group(id).SendAsync("CreateGroup", id);
+            await Clients.Group(id).SendAsync("UserAdded", new List<string>() {user.Name});
         }
 
         public async Task JoinGroupFromLink(string id)
@@ -56,10 +56,12 @@ namespace CodeCup.Hubs
 
                 await _userRepository.CreateAsync(user);
 
+                var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
+
                 if (group?.Status == Domain.Enum.StatusEntity.Active)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                    await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", user.Name);
+                    await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users);
                 }   
             }
         }

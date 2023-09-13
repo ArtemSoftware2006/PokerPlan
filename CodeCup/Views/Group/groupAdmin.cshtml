@@ -135,6 +135,7 @@
     var cardDivs = document.querySelectorAll('.card--vote');
     var averageDiv = document.getElementById('average');
     let userCards = document.getElementsByClassName("card--container");
+    let usersInGroup = []
     let value = 0;
     let average = 0;
     let currentUsername = "Администратор"
@@ -177,20 +178,26 @@
         stopBtn.classList.add("d-none")
     });
 
-    hubConnection.on("UserAdded", function(username) {
-        let messageElement = document.createElement("p");
-        messageElement.textContent = username ;
+    hubConnection.on("UserAdded", function(users) {
         
-        for(let i = 0; i < userCards.length; i++) {
-            console.log(userCards[i].childElementCount)
-            if(userCards[i].childElementCount == 1) {
-                userCards[i].appendChild(messageElement);
-                userCards[i].children[0].classList.add("card--add--user");
-                break;
+        for(let i = 0; i < users.length; i++) {
+
+            if(!usersInGroup.includes(users[i])) {
+                usersInGroup.push(users[i]);
+
+                let messageElement = document.createElement("p");
+                messageElement.textContent = users[i] ;
+                
+                for(let j = 0; j < userCards.length; j++) {
+
+                    if(userCards[j].childElementCount === 1) {
+                        userCards[j].appendChild(messageElement);
+                        userCards[j].children[0].classList.add("card--add--user");
+                        break 
+                    }
+                }
             }
         }
-
-        document.getElementById("chatroom").appendChild(messageElement);
     });
 
     document.getElementById("logout").addEventListener("click", function () {
