@@ -83,7 +83,7 @@ namespace CodeCup.Hubs
             var vote = new Vote() {
                 DateCreated = DateTime.Now,
                 GroupId = group.Id,
-                Value = int.Parse(model.Value),
+                Value = int.TryParse(model.Value, out int number) ? number : 0,
                 UserId = user.Id,
             };
 
