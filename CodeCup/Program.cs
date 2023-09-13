@@ -8,12 +8,21 @@ using Service.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var conf_builder = new ConfigurationBuilder();
+
+conf_builder.SetBasePath(Directory.GetCurrentDirectory());
+conf_builder.AddJsonFile("appsettings.json");
+var config = conf_builder.Build();
+
+var connection = config["ConnectionStrings:DefaultConnection"];
+
+builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlite(connection));
+
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IVoteRepository, VoteRepository>();
 builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlite("Data Source=codeCupDb.db"));
 
 builder.Services.AddSignalR();
 

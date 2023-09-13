@@ -17,11 +17,5 @@ namespace DAL
          { 
             Database.EnsureCreated();
          }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var connectionString = @"Data Source=codeCupDb.db";
-
-            optionsBuilder.UseSqlite(new SqliteConnection(connectionString));
-        }
     }
 }
