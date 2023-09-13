@@ -91,6 +91,22 @@
 
     </div>
 
+    <div class="mt-4 d-flex justify-content-between">
+        <div class="card--vote m-1">0</div>
+        <div class="card--vote m-1">1</div>
+        <div class="card--vote card--vote--active m-1">2</div>
+        <div class="card--vote m-1">3</div>
+        <div class="card--vote m-1">5</div>
+        <div class="card--vote m-1">8</div>
+        <div class="card--vote m-1">13</div>
+        <div class="card--vote m-1">21</div>
+        <div class="card--vote m-1">34</div>
+        <div class="card--vote m-1">55</div>
+        <div class="card--vote m-1">89</div>
+        <div class="card--vote m-1">?</div>
+        <div class="card--vote m-1">Кофе</div>
+    </div>
+
     <div class="m-3">
         <button class="btn--blue" id="stopBtn">Завершить голосование</button>
         <button class="btn--blue d-none" id="newVotingBtn">Начать заново</button>
@@ -108,6 +124,23 @@
     let isVotingStopped = false;
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
+    var cardDivs = document.querySelectorAll('.card--vote');
+    let value = 0;
+
+    cardDivs.forEach(function(cardDiv) {
+        cardDiv.addEventListener('click', function() {
+            if(cardDiv.classList.contains('card--vote--active')) {
+                cardDiv.classList.remove('card--vote--active');
+                value = 0;
+            }
+            else{
+                document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
+                cardDiv.classList.add('card--vote--active');
+                value = cardDiv.textContent
+            }
+        });
+    });
+
 
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
