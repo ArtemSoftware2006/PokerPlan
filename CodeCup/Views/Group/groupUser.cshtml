@@ -187,17 +187,20 @@
     hubConnection.on("UserAdded", function(users) {
 
         if(currentUsername === "") {
-            currentUsername = users[users.length - 1]
+            currentUsername = users[users.length - 1].name
             document.getElementById("CurrentName").textContent = currentUsername ;
         }   
 
         for(let i = 0; i < users.length; i++) {
 
-            if(!usersInGroup.includes(users[i])) {
+            console.log(users);
+            console.log(usersInGroup)
+
+            if(!usersInGroup.some(user => user.id === users[i].id)) {
                 usersInGroup.push(users[i]);
 
                 let messageElement = document.createElement("p");
-                messageElement.textContent = users[i] ;
+                messageElement.textContent = users[i].name ;
                 
                 for(let j = 0; j < userCards.length; j++) {
 
@@ -211,7 +214,7 @@
         }
     });
 
-     hubConnection.on("CloseGroup", function(username) {
+    hubConnection.on("CloseGroup", function(username) {
         window.location.href = '/Error/GroupClosed';
     });
 

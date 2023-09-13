@@ -140,6 +140,7 @@
     let value = 0;
     let average = 0;
     let currentUsername = "Администратор"
+    let isVoting = true;
 
     document.getElementById("CurrentName").textContent = currentUsername
 
@@ -193,13 +194,15 @@
 
     hubConnection.on("UserAdded", function(users) {
 
+        console.log(users)
+
         for(let i = 0; i < users.length; i++) {
 
-            if(!usersInGroup.includes(users[i])) {
+            if(!usersInGroup.some(user => user.id === users[i].id)) {
                 usersInGroup.push(users[i]);
 
                 let messageElement = document.createElement("p");
-                messageElement.textContent = users[i] ;
+                messageElement.textContent = users[i].name ;
                 
                 for(let j = 0; j < userCards.length; j++) {
 

@@ -1,3 +1,4 @@
+using DAL.Impl;
 using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
@@ -36,7 +37,14 @@ namespace CodeCup.Hubs
             await _userRepository.CreateAsync(user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, id);
-            await Clients.Group(id).SendAsync("UserAdded", new List<string>() {user.Name});
+
+            UserVm userVm = new UserVm() 
+            {
+                Name = user.Name,
+                Id = user.Id
+            };
+
+            await Clients.Group(id).SendAsync("UserAdded", new List<UserVm>() {userVm});
         }
 
         public async Task JoinGroupFromLink(string id)
@@ -56,7 +64,7 @@ namespace CodeCup.Hubs
 
                 await _userRepository.CreateAsync(user);
 
-                var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
+                var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserVm() {Name = x.Name, Id = x.Id}).ToList();
 
                 if (group?.Status == Domain.Enum.StatusEntity.Active)
                 {
@@ -124,6 +132,17 @@ namespace CodeCup.Hubs
             await _groupRepository.UpdateAsync(group);
 
             await Clients.Group(groupId).SendAsync("CloseGroup");
+        }
+        public async Task Logout(string groupId, string userId) 
+        {
+            var user = await _userRepository.GetAsync(int.Parse(userId));
+
+            if (user != null)
+            {
+                await _userRepository.DeleteAsync(user);
+
+                await Clients.Group(groupId).SendAsync("Logout", userId);
+            }
         }
     }
 }
