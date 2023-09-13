@@ -132,6 +132,11 @@
                 cardDiv.classList.add('card--vote--active');
                 value = cardDiv.textContent
             }
+
+            hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername})
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
         });
     });
 

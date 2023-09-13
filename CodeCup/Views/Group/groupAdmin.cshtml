@@ -17,9 +17,8 @@
 
             <div class="d-flex justify-content-center align-items-center">
                 <div class="dropdown">
-                    <a class="btn dropdown-toggle m-1 me-3" style="font-size: 26px;" href="#" role="button" 
+                    <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        Администратор
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
                         <li>
@@ -129,6 +128,9 @@
     var averageDiv = document.getElementById('average');
     let value = 0;
     let average = 0;
+    let currentUsername = "Администратор"
+
+    document.getElementById("CurrentName").textContent = currentUsername
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -141,6 +143,11 @@
                 cardDiv.classList.add('card--vote--active');
                 value = cardDiv.textContent
             }
+
+             hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername})
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
         });
     });
 

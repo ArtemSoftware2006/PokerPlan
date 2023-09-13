@@ -71,6 +71,15 @@ namespace CodeCup.Hubs
             var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(model.GroupId) 
                 && x.Name == model.Username).FirstOrDefault();
 
+            var oldVote = _voteRepository.GetAllAsync().Where(x => x.GroupId == group.Id && x.UserId == user.Id).FirstOrDefault();
+
+            if (oldVote != null)
+            {
+                await _voteRepository.DeleteAsync(oldVote);
+            }
+
+            _logger.LogInformation("User: {0} voted : {1}", user.Name, model.Value);
+
             var vote = new Vote() {
                 DateCreated = DateTime.Now,
                 GroupId = group.Id,
