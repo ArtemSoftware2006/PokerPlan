@@ -107,3 +107,14 @@ html {
   font-family: "Montserrat";
   color: #4FC1EB;
 }
+
+.card--container {
+
+}
+
+.card--add--user {
+  background-color: #4FC1EB;
+  background-image: url("../Vector.png");
+  background-repeat: no-repeat;
+  background-position: center;
+}
