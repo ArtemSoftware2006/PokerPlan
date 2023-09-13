@@ -3,15 +3,71 @@
     ViewData["Title"] = "Группа";
 }
 @{
-    string guidValue = Model.Name.ToString();
+    string guidValue = Model.Id;
 }
-<div>
-     <button type="button" class="btn--blue" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-        Пригласить
-    </button>
 
-    <label>Пользователь</label>
-    <p id="CurrentName"></p>
+
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white box-shadow mb-3">
+        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+
+            <div class="d-flex justify-content-center">
+                <img class="me-1" src="@Url.Content("~/eagle.png")" alt="Орел">
+                <div style="font-size: 30px;font-family: 'Montserrat'">@Model.Name</div>
+            </div>
+
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="dropdown">
+                    <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    </a>
+                    <ul class="dropdown-menu m-1 ms-3">
+                        <li>
+                            <a class="dropdown-item" id="logout" href="@Url.Action("CreateGroup", "Group")">Выйти</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Пригласить
+                </button>
+            </div>
+         
+        </div>
+    </nav>
+</header>
+
+<div class="d-flex flex-column m-2 flex-grow-1 justefy-content-center text-center">
+    <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+
+        <div class="d-flex justify-content-center">
+                <div class="card cirle--margin"></div>
+                <div class="card cirle--margin" ></div>
+            </div>
+
+        <div class="d-flex align-items-center ">
+
+        <div class="flex-grow-1 d-flex justify-content-end">
+                <div class="card me-1"></div>
+            </div>
+
+            <div class="table">
+                <img style=" filter: brightness(-100%)" src="@Url.Content("~/sunny.png")" alt="Солнце">
+            </div>
+
+            <div class="flex-grow-1">
+                <div class="card ms-1"></div>
+            </div>
+
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <div class="card cirle--margin"></div>
+            <div class="card cirle--margin"></div>
+        </div>
+
+    </div>
 
     <input id="numId" type="number" placeholder="Выбрать значение"/>
     <button  type="button" id="sendBtn" >Проголосовать</button>
