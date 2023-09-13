@@ -129,6 +129,7 @@
     let groupId = "@Html.Raw(guidValue)";
     let currentUsername = ""
     var cardDivs = document.querySelectorAll('.card--vote');
+    let cardsVoting = document.querySelectorAll(".card--vote");
     let value = 0;
     var averageDiv = document.getElementById('average');
     let usersInGroup = []
@@ -168,10 +169,16 @@
 
     hubConnection.on("StartNewVoting", function() {
         averageDiv.classList.add("d-none")
+         cardsVoting.forEach(function(card) {
+            card.classList.remove("d-none");
+        });
      
     });
     hubConnection.on("FinishVoting", function(usersVote, average) {
-        console.log(average)
+         cardsVoting.forEach(function(card) {
+            card.classList.add("d-none");
+        });
+
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
      
