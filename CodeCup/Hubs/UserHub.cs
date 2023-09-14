@@ -94,7 +94,7 @@ namespace CodeCup.Hubs
             var vote = new Vote() {
                 DateCreated = DateTime.Now,
                 GroupId = group.Id,
-                Value = int.TryParse(model.Value, out int number) ? number : 0,
+                Value = model.Value,
                 UserId = user.Id,
             };
 
@@ -111,7 +111,19 @@ namespace CodeCup.Hubs
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
 
-            double average = usersVotes.Count != 0 ? Math.Round(usersVotes.Average(x => x.Value),1) : 0;
+            float sumValues = 0;
+            int countVotind = 0;
+
+            foreach (UsersVote item in usersVotes)
+            {
+                if (!(item.Value == "?" || item.Value == "Кофе"))
+                {
+                    sumValues += float.Parse(item.Value);
+                    countVotind++;
+                }
+            }
+
+            double average = countVotind != 0 ? Math.Round(sumValues / countVotind,1) : 0;
             
             await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average);
         }
