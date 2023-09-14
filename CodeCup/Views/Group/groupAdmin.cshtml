@@ -186,31 +186,33 @@
             card.classList.add("d-none");
         });
 
-        for(let i = 0; i < usersVote.length; i++) {
-            console.log(usersVote[i])
-        }
-
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
 
         newVotingBtn.classList.remove("d-none")
         stopBtn.classList.add("d-none")
 
+        
         userCards.forEach(function(userCard) {
-            userCard.children[0].classList.add("card--add--user--value");
-            userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.add("card--add--user--value");
+                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+            }
         });
+
     });
 
-    hubConnection.on("StartNewVoting", function(usersVote, average) {
+    hubConnection.on("StartNewVoting", function() {
         
         cardsVoting.forEach(function(card) {
             card.classList.remove("d-none");
         });
 
         userCards.forEach(function(userCard) {
-            userCard.children[0].classList.remove("card--add--user--value");
-            userCard.children[0].textContent = "";
+            if(userCard.children[1].textContent != "") {
+                 userCard.children[0].classList.remove("card--add--user--value");
+                userCard.children[0].textContent = "";
+            }
         });
 
     });
@@ -231,7 +233,7 @@
         }
     });
 
-    hubConnection.on("UserAdded", function(users) {
+    hubConnection.on("UserAdded", function(users, statusGroup) {
 
         if(currentUsername.name === "") {
             currentUsername = users[users.length - 1]

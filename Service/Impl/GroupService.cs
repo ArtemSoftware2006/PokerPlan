@@ -29,7 +29,7 @@ namespace Service.Impl
                     Id = Guid.NewGuid(),
                     Name = model.Name,
                     DateCreated = DateTime.Now,
-                    Status = StatusEntity.Created
+                    Status = StatusEntity.Active
                 };
 
                 bool status = await _groupRepository.CreateAsync(group);

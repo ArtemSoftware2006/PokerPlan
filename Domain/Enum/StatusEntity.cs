@@ -2,7 +2,7 @@ namespace Domain.Enum
 {
     public enum StatusEntity
     {
-        Created,
+        Stopped,
         Active,
         Closed,
     }

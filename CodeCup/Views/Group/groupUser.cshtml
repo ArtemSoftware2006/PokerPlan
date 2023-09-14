@@ -181,8 +181,10 @@
         });
 
         userCards.forEach(function(userCard) {
-            userCard.children[0].classList.remove("card--add--user--value");
-            userCard.children[0].textContent = "";
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.remove("card--add--user--value");
+                userCard.children[0].textContent = "";
+            }
         });
      
     });
@@ -195,17 +197,28 @@
         averageDiv.classList.remove("d-none")
 
         userCards.forEach(function(userCard) {
-            userCard.children[0].classList.add("card--add--user--value");
-            userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.add("card--add--user--value");
+                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+            }
         });
      
     });
 
-    hubConnection.on("UserAdded", function(users) {
+    hubConnection.on("UserAdded", function(users, statusGroup) {
 
         if(currentUsername.name === "") {
             currentUsername = users[users.length - 1]
             document.getElementById("CurrentName").textContent = currentUsername.name ;
+
+            console.log("Status is " + statusGroup)
+
+            if(statusGroup == 0) {
+                cardsVoting.forEach(function(card) {
+                    card.classList.add("d-none");
+                });
+
+            }
         }   
 
         for(let i = 0; i < users.length; i++) {

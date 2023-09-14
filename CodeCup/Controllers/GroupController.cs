@@ -57,9 +57,9 @@ namespace Новая_папка.Controllers
                     return Redirect("/Error/NotFound");
                 }
 
-                if (groupDb != null && groupDb?.Status == StatusEntity.Active)
+                if (groupDb != null && groupDb?.Status != StatusEntity.Closed)
                 {
-                    return View("groupUser", new GroupVm() {Name = groupDb.Name,Id = group, Link = link});
+                    return View("groupUser", new GroupVm() {Name = groupDb.Name, Id = group, Link = link});
                 }
                 
                 return Redirect("/Error/NotFound");

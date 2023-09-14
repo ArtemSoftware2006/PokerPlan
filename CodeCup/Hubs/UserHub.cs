@@ -25,18 +25,18 @@ namespace CodeCup.Hubs
             _logger = logger;
         }
        
-        public async Task CreateGroup(string id)
+        public async Task CreateGroup(string groupId)
         {
             var user = new User() {
                 Name = "Администратор",
                 DateCreated = DateTime.Now,
                 Role = Role.Admin,
-                GroupId = Guid.Parse(id)
+                GroupId = Guid.Parse(groupId)
             };
 
             await _userRepository.CreateAsync(user);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, id);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
 
             UserVm userVm = new UserVm() 
             {
@@ -44,7 +44,7 @@ namespace CodeCup.Hubs
                 Id = user.Id
             };
 
-            await Clients.Group(id).SendAsync("UserAdded", new List<UserVm>() {userVm});
+            await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {userVm});
         }
 
         public async Task JoinGroupFromLink(string id)
@@ -67,10 +67,10 @@ namespace CodeCup.Hubs
 
             var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserVm() {Name = x.Name, Id = x.Id}).ToList();
 
-            if (group?.Status == Domain.Enum.StatusEntity.Active)
+            if (group?.Status != Domain.Enum.StatusEntity.Closed)
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users);
+                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users, group.Status);
             }   
             
         }
@@ -121,6 +121,12 @@ namespace CodeCup.Hubs
                     equals new {UserId = user.Id, user.GroupId}
                 select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
 
+            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+            group.Status = StatusEntity.Stopped;
+
+            await _groupRepository.UpdateAsync(group);
+
             float sumValues = 0;
             int countVotind = 0;
 
@@ -140,6 +146,12 @@ namespace CodeCup.Hubs
         public async Task StartNewVoting(string groupId) 
         {
             var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));
+
+            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+            group.Status = StatusEntity.Active;
+
+            await _groupRepository.UpdateAsync(group);
 
            _voteRepository.DeleteRow(votes.ToList());
 
