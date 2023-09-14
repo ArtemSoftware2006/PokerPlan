@@ -139,7 +139,7 @@
     let usersInGroup = []
     let value = 0;
     let average = 0;
-    let currentUsername = {name : "Администратор", id : "0"}
+    let currentUsername = {name : "", id : "0"}
     let isVoting = true;
 
     document.getElementById("CurrentName").textContent = currentUsername.name
@@ -148,18 +148,30 @@
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
                 cardDiv.classList.remove('card--vote--active');
+
+                console.log("Delete vote start")
+
+                hubConnection.invoke("DeleteVote", groupId, currentUsername.id.toString())
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+                console.log("Delete vote finish")
+
                 value = 0;
             }
             else{
                 document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
                 cardDiv.classList.add('card--vote--active');
+
+                
+                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
                 value = cardDiv.textContent
             }
-
-             hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
         });
     });
 

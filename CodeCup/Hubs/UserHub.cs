@@ -74,7 +74,17 @@ namespace CodeCup.Hubs
             }   
             
         }
-       
+        public async Task DeleteVote(string groupId, string userId)
+        {
+            _logger.LogInformation("User: {0} deleted vote", userId);
+
+            Vote vote = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId)).FirstOrDefault();
+
+            if (vote != null)
+            {
+                await _voteRepository.DeleteAsync(vote);
+            }
+        }
         public async Task SetVote(CreateVoteVm model)
         {
             var group = await _groupRepository.GetAsync(Guid.Parse(model.GroupId));
@@ -127,7 +137,6 @@ namespace CodeCup.Hubs
             
             await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average);
         }
-        
         public async Task StartNewVoting(string groupId) 
         {
             var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));

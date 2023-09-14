@@ -140,18 +140,23 @@
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
                 cardDiv.classList.remove('card--vote--active');
+
+                hubConnection.invoke("DeleteVote", groupId, currentUsername.id.toString())
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
                 value = 0;
             }
             else{
                 document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
                 cardDiv.classList.add('card--vote--active');
                 value = cardDiv.textContent
-            }
 
-            hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
+                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+            }
         });
     });
 
