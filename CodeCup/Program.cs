@@ -47,6 +47,7 @@ app.UseCors(option => {
     option.AllowCredentials();
     option.WithOrigins("http://127.0.0.1:5501");
 });
+app.UseHsts();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
