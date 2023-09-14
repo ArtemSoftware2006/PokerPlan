@@ -1,11 +1,27 @@
+<div class="not-found-page flex-grow-1">
+    <div class="not-found__container">
+        <img
+            src=@Url.Content("~/not_found.png")
+            alt="Not found"
+            class="not-found__img"
+        />
 
+        <div class="not-found__text">
+            <h1>
+            404
+            </h1>
+            <h3>
+            Администратор вышел из группы
+            </h3>
+            <p>
+            Простите, но комната закрылась, так как администратор её покинул
+            </p>
+        </div>
 
-<div class="text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center">
-    <div>404</div>
-    <div>Администратор вышел из группы</div>
-    <div>Простите, но комната закрылась, так как администратор её покинул</div>
-    <form action="@Url.Action("CreateGroup", "Group")" method="get">
-        <button class="btn--blue ps-5 pe-5" >Назад</button>
-    </form>
+        <form action="@Url.Action("CreateGroup", "Group")" method="get">
+            <button class="btn--blue ps-5 pe-5" >Назад</button>
+        </form>
+    </div>
 </div>
+
 

@@ -1,10 +1,26 @@
 
-<div class="text-center flex-grow-1 d-flex flex-column justify-content-center align-items-center">
-    <div>500</div>
-    <div>Ошибка на стороне сервера</div>
-    <div>Простите, у нас случилась ошибка!</div>
-    <form action="@Url.Action("CreateGroup", "Group")" method="get">
-        <button class="btn--blue ps-5 pe-5" >Назад</button>
-    </form>
-</div>
+<div class="not-found-page flex-grow-1">
+    <div class="not-found__container">
+        <img
+            src=@Url.Content("~/not_found.png")
+            alt="Not found"
+            class="not-found__img"
+        />
 
+        <div class="not-found__text">
+            <h1>
+            500
+            </h1>
+            <h3>
+            Ошибка на стороне сервера
+            </h3>
+            <p>
+            Простите, у нас случилась ошибка!
+            </p>
+        </div>
+
+        <form action="@Url.Action("CreateGroup", "Group")" method="get">
+            <button class="btn--blue ps-5 pe-5" >Назад</button>
+        </form>
+    </div>
+</div>
