@@ -28,6 +28,8 @@ namespace Новая_папка.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateGroup(string name) 
         {
+            name = name.Trim();
+
             string domainName = Request.Host.Value;
 
             Guid id = Guid.NewGuid();
