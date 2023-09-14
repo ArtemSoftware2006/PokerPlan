@@ -25,7 +25,16 @@ builder.Services.AddTransient<IVoteRepository, VoteRepository>();
 builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.HttpsPort = 443;
+});
+
 
 var app = builder.Build();
 
@@ -47,10 +56,11 @@ app.UseCors(option => {
     option.AllowCredentials();
     option.WithOrigins("http://127.0.0.1:5501");
 });
-app.UseHsts();
-app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
+app.UseHsts();
+app.UseHttpsRedirection();
 app.UseRouting();
 
 app.MapHub<UserHub>("/user");
