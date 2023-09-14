@@ -25,6 +25,13 @@ html {
   border: 1px solid black;
 }
 
+.btn--orange {
+  background-color: #F6A928;
+  padding: 7px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
 .btn--blue {
   background-color: #4FC1EB;
   padding: 7px;
@@ -127,4 +134,13 @@ html {
   font-size: 24px;
   font-weight: 600;
   color: white;
+}
+
+.message--no--consent {
+  color: black;
+  background-color: #f6ab2818;
+  border: 1px solid #F6A928;
+  border-style: dashed;
+  padding: 16px 24px 16px 24px;
+  border-radius: 8px;
 }

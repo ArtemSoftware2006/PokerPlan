@@ -84,6 +84,11 @@
     </div>
 
     <div class="mt-4 d-flex justify-content-between">
+
+        <div class="message--no--consent m-1 d-none">
+            Единого мнения о сложности этой задачи нет. Вам нужно обсудить результаты голосования. После обсуждения - повторное голосование.
+        </div>
+
         <div class="card--vote m-1">0</div>
         <div class="card--vote m-1">1</div>
         <div class="card--vote m-1">2</div>
@@ -126,8 +131,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
+    let isFullConsent = false;
     let groupId = "@Html.Raw(guidValue)";
     let currentUsername = {name : "" , id : 0}
+    let messageNotConsent = document.querySelector('.message--no--consent');
     var cardDivs = document.querySelectorAll('.card--vote');
     let cardsVoting = document.querySelectorAll(".card--vote");
     let value = 0;
@@ -175,6 +182,7 @@
     })
 
     hubConnection.on("StartNewVoting", function() {
+        messageNotConsent.classList.add("d-none");
         averageDiv.classList.add("d-none")
         cardsVoting.forEach(function(card) {
             card.classList.remove("d-none");
@@ -188,7 +196,13 @@
         });
      
     });
-    hubConnection.on("FinishVoting", function(usersVote, average) {
+    hubConnection.on("FinishVoting", function(usersVote, average, consent) {
+
+        isFullConsent = consent;
+
+        if(!isFullConsent) 
+            messageNotConsent.classList.remove("d-none");
+
         cardsVoting.forEach(function(card) {
             card.classList.add("d-none");
         });

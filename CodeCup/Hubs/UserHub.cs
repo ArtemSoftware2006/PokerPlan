@@ -114,6 +114,11 @@ namespace CodeCup.Hubs
 
         public async Task FinishVoting(string groupId)
         {
+            float sumValues = 0;
+            int countVotind = 0;
+            bool isFullConsent = false;
+            double average = 0;
+
             var usersVotes = (
                 from vote in _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId))
                 join user in _userRepository.GetAllAsync()
@@ -127,9 +132,6 @@ namespace CodeCup.Hubs
 
             await _groupRepository.UpdateAsync(group);
 
-            float sumValues = 0;
-            int countVotind = 0;
-
             foreach (UsersVote item in usersVotes)
             {
                 if (!(item.Value == "?" || item.Value == "Кофе"))
@@ -139,9 +141,16 @@ namespace CodeCup.Hubs
                 }
             }
 
-            double average = countVotind != 0 ? Math.Round(sumValues / countVotind,1) : 0;
+            if (countVotind != 0)
+            {
+                isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
+
+                average = Math.Round(sumValues / countVotind,1);
+            }
+            else    
+                average = 0;
             
-            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average);
+            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);
         }
         public async Task StartNewVoting(string groupId) 
         {

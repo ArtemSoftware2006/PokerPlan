@@ -84,7 +84,8 @@
                 <div class="m-3 relative">
                     <button class="btn--blue table--button " id="stopBtn">Завершить голосование</button>
                     <div id="average" class="d-none table--button cifra-average"></div>
-                    <button class="btn--blue d-none table--bottom " id="newVotingBtn">Начать заново</button>
+                    <button class="btn--orange d-none table--bottom " id="againVotingBtn">Голосовать снова</button>
+                    <button class="btn--blue d-none table--bottom " id="newVotingBtn">Начать новое голосование</button>
                 </div>
             </div>
 
@@ -106,6 +107,11 @@
     </div>
 
     <div class="mt-4 d-flex justify-content-between">
+
+        <div class="message--no--consent m-1 d-none">
+            Единого мнения о сложности этой задачи нет. Вам нужно обсудить результаты голосования. После обсуждения - повторное голосование.
+        </div>
+
         <div class="card--vote m-1">0</div>
         <div class="card--vote m-1">1</div>
         <div class="card--vote m-1">2</div>
@@ -132,12 +138,15 @@
     let isVotingStopped = false;
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
+    let againVotingBtn = document.getElementById("againVotingBtn")
     var cardDivs = document.querySelectorAll('.card--vote');
+    let messageNotConsent = document.querySelector('.message--no--consent');
     var averageDiv = document.getElementById('average');
     let userCards = document.querySelectorAll(".card--container");
     let cardsVoting = document.querySelectorAll(".card--vote");
     let usersInGroup = []
     let value = 0;
+    let isFullConsent = false;
     let average = 0;
     let currentUsername = {name : "", id : "0"}
     let isVoting = true;
@@ -149,14 +158,10 @@
             if(cardDiv.classList.contains('card--vote--active')) {
                 cardDiv.classList.remove('card--vote--active');
 
-                console.log("Delete vote start")
-
                 hubConnection.invoke("DeleteVote", groupId, currentUsername.id.toString())
                 .catch(function (err) {
                     return console.error(err.toString());
                 });
-
-                console.log("Delete vote finish")
 
                 value = 0;
             }
@@ -180,8 +185,17 @@
         .withUrl("http://localhost:5010/user")
         .build();
     
-    hubConnection.on("FinishVoting", function(usersVote, average) {
-        
+    hubConnection.on("FinishVoting", function(usersVote, average, consent) {
+        isFullConsent = consent
+
+        if(isFullConsent)
+            newVotingBtn.classList.remove("d-none")
+        else
+        {
+            messageNotConsent.classList.remove("d-none")
+            againVotingBtn.classList.remove("d-none")
+        }
+
         cardsVoting.forEach(function(card) {
             card.classList.add("d-none");
         });
@@ -189,7 +203,6 @@
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
 
-        newVotingBtn.classList.remove("d-none")
         stopBtn.classList.add("d-none")
 
         
@@ -203,14 +216,25 @@
     });
 
     hubConnection.on("StartNewVoting", function() {
-        
+
+        messageNotConsent.classList.add("d-none")
+
+        if(isFullConsent) 
+            newVotingBtn.classList.add("d-none")
+        else
+            againVotingBtn.classList.add("d-none")
+
+        stopBtn.classList.remove("d-none")
+        averageDiv.classList.add("d-none")
+
+
         cardsVoting.forEach(function(card) {
             card.classList.remove("d-none");
         });
 
         userCards.forEach(function(userCard) {
             if(userCard.children[1].textContent != "") {
-                 userCard.children[0].classList.remove("card--add--user--value");
+                userCard.children[0].classList.remove("card--add--user--value");
                 userCard.children[0].textContent = "";
             }
         });
@@ -219,7 +243,6 @@
 
     hubConnection.on("Logout", function(userId) {
         
-
         let deleteUser = usersInGroup.find(user => user.id == userId); 
 
         usersInGroup = usersInGroup.filter(user => user.id != userId);
@@ -273,10 +296,15 @@
             .catch(function (err) {
                 return console.error(err.toString());
             });
-        averageDiv.classList.add("d-none")
-        stopBtn.classList.remove("d-none")
-        newVotingBtn.classList.add("d-none")
     });
+
+    againVotingBtn.addEventListener("click", function () {
+        hubConnection.invoke("StartNewVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    });
+
     stopBtn.addEventListener("click", function () {
         hubConnection.invoke("FinishVoting", groupId)
             .catch(function (err) {
