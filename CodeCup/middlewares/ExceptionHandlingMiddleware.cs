@@ -25,15 +25,16 @@ namespace Новая_папка.middlewares
             catch (Exception ex)
             {
                 await HandleExceptionAsync(httpContext,
-                    ex.Message,
+                    ex,
                     HttpStatusCode.InternalServerError,
                     "Internal server error");
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, string exMsg, HttpStatusCode httpStatusCode, string message)
+        private async Task HandleExceptionAsync(HttpContext context, Exception ex, HttpStatusCode httpStatusCode, string message)
         {
-            _logger.LogError(exMsg);
+            _logger.LogError(ex.Message);
+            _logger.LogError(ex.StackTrace);
         }
     }
 }

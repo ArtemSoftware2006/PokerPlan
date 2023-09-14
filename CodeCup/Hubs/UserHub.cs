@@ -34,6 +34,8 @@ namespace CodeCup.Hubs
                 GroupId = Guid.Parse(groupId)
             };
 
+            _logger.LogInformation("User: {0} created group {1}", user.Name, groupId);
+
             await _userRepository.CreateAsync(user);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
@@ -55,6 +57,7 @@ namespace CodeCup.Hubs
 
             var maybeNames = names.Except(userNames).ToList();
 
+            _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], id);
             
             var user = new User() {
             Name = maybeNames[0],
