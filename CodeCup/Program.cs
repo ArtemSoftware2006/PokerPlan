@@ -5,6 +5,7 @@ using DAL.interfaces;
 using Microsoft.EntityFrameworkCore;
 using Service.Impl;
 using Service.Interfaces;
+using Новая_папка.middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,12 +29,17 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseStatusCodePagesWithReExecute("/Error/NotFound/{0}");
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseExceptionHandler("/Error/Fatal");
+
 app.UseCors(option => {
     option.AllowAnyOrigin();
     option.AllowAnyHeader();
@@ -45,7 +51,6 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseStatusCodePagesWithReExecute("/Error/NotFound/{0}");
 
 app.MapHub<UserHub>("/user");
 

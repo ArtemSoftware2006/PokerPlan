@@ -10,4 +10,8 @@ public class ErrorController : Controller
     {
         return View();
     }
+    public IActionResult Fatal()
+    {
+        return View();
+    }
 }
