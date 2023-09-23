@@ -182,7 +182,7 @@
 
 
     const hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl("wss://artemchic.site/user")
+        .withUrl("http://localhost:5010/user")
         .build();
     
     hubConnection.on("FinishVoting", function(usersVote, average, consent) {

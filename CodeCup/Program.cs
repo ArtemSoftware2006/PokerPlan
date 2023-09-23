@@ -2,6 +2,7 @@ using CodeCup.Hubs;
 using DAL;
 using DAL.Impl;
 using DAL.interfaces;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Service.Impl;
 using Service.Interfaces;
@@ -30,11 +31,6 @@ builder.Services.AddSignalR(options =>
     options.EnableDetailedErrors = true;
 });
 
-builder.Services.AddHttpsRedirection(options =>
-{
-    options.HttpsPort = 443;
-});
-
 
 var app = builder.Build();
 
@@ -49,6 +45,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseExceptionHandler("/Error/Fatal");
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseCors(option => {
     option.AllowAnyOrigin();
     option.AllowAnyHeader();
@@ -59,7 +60,6 @@ app.UseCors(option => {
 
 app.UseStaticFiles();
 
-app.UseHsts();
 app.UseHttpsRedirection();
 app.UseRouting();
 
