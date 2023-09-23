@@ -39,7 +39,7 @@ namespace Новая_папка.Controllers
                 DateCreated = DateTime.Now, Id = id, Name = name, Status = StatusEntity.Active
             });
 
-            return View("groupAdmin", new GroupVm() {Name = name, Link = link, Id=id.ToString()});
+            return View("groupAdmin", new GroupModel() {Name = name, Link = link, Id=id.ToString()});
         }
         [HttpGet("{group}")]
         public async Task<IActionResult> Join(string group)
@@ -61,7 +61,7 @@ namespace Новая_папка.Controllers
 
                 if (groupDb != null && groupDb?.Status != StatusEntity.Closed)
                 {
-                    return View("groupUser", new GroupVm() {Name = groupDb.Name, Id = group, Link = link});
+                    return View("groupUser", new GroupModel() {Name = groupDb.Name, Id = group, Link = link});
                 }
                 
                 return Redirect("/Error/NotFound");
