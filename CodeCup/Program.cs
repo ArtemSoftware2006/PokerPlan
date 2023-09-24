@@ -4,6 +4,7 @@ using DAL.Impl;
 using DAL.interfaces;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using NLog.Web;
 using Service.Impl;
 using Service.Interfaces;
 using Новая_папка.middlewares;
@@ -19,6 +20,9 @@ var config = conf_builder.Build();
 var connection = config["ConnectionStrings:DefaultConnection"];
 
 builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection,new MySqlServerVersion(new Version(8, 0, 31))),10);
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
