@@ -1,5 +1,8 @@
+using System.Runtime.CompilerServices;
 using DAL.interfaces;
+using Domain;
 using Domain.Entity;
+using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.Extensions.Logging;
 using Service.Interfaces;
@@ -15,13 +18,12 @@ namespace Service.Impl
             _logger = logger;
             _userRepository = userRepository;
         }
-        public async Task<bool> CreateAsync(UserVm model)
+        public async Task<BaseResponse<User>> CreateAsync(UserVm model)
         {
             try
             {
                 var user = new User() 
                 {
-                    Id = model.UserId,
                     Name = model.Name,
                     GroupId = Guid.Parse(model.GroupId),
                     Role = model.Role,
@@ -34,19 +36,112 @@ namespace Service.Impl
                 {
                     _logger.LogInformation("Add user witf id = {0}, name = {1}", user.Id, user.Name);
 
-                    return true;
+                    return new BaseResponse<User> {
+                        Status = Domain.Enum.Status.Ok,
+                        Data = user
+                    };
                 }
-                
+
                 _logger.LogError("User don`t saved (id = {0}), name = {1})", user.Id, user.Name);
 
-                return false;
+                return new BaseResponse<User> {
+                    Status = Domain.Enum.Status.Error,
+                    Data = null
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return false;
+                return new BaseResponse<User> {
+                    Status = Status.Error,
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<BaseResponse<bool>> DeleteAsync(User model)
+        {
+            try
+            {
+                bool status = await _userRepository.DeleteAsync(model);
+
+                if (status)
+                    return new BaseResponse<bool>() {
+                        Data = true,
+                        Status = Status.Ok
+                    };
+                    
+                return new BaseResponse<bool>() {
+                    Data = false,
+                    Status = Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<bool> {
+                    Status = Status.Error,
+                    Data = false
+                };
+            }
+        }
+
+        public BaseResponse<List<User>> GetAll()
+        {
+            try
+            {
+                var users = _userRepository.GetAllAsync().ToList();
+
+                if(users != null) {
+                    return new BaseResponse<List<User>>() {
+                        Data = users,
+                        Status = Domain.Enum.Status.Ok
+                    };
+                }
+
+                return new BaseResponse<List<User>> {
+                    Status = Domain.Enum.Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<List<User>> {
+                    Status = Domain.Enum.Status.Error,
+                };
+            }
+        }
+
+        public async Task<BaseResponse<User>> GetAsync(int id)
+        {
+            try
+            {
+                var user = await _userRepository.GetAsync(id);
+
+                if (user != null)
+                    return new BaseResponse<User>() {
+                        Data = user,
+                        Status = Status.Ok
+                    };
+                
+                return new BaseResponse<User>() {
+                    Status = Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<User> {
+                    Status = Status.Error,
+                };
             }
         }
     }

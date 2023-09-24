@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using DAL.interfaces;
+using Domain;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
@@ -50,9 +51,69 @@ namespace Service.Impl
             }
         }
 
+        public async Task<BaseResponse<Group>> GetAsync(string groupId)
+        {
+            try
+            {
+                var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+                if (group != null) {
+                    return new BaseResponse<Group>() {
+                        Data = group,
+                        Status = Status.Ok
+                    };
+                }
+
+                return new BaseResponse<Group> {
+                    Data = null,
+                    Status = Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(ex.Message);
+               _logger.LogError(ex.StackTrace);
+
+               throw;
+            }
+        }
+
         public async Task<string> JoinAsync(UserVm model)
         {
             throw  new NotImplementedException();
+        }
+
+        public async Task<BaseResponse<Group>> UpdateAsync(Group group)
+        {
+            try
+            {
+                if (group == null)
+                {
+                    return new BaseResponse<Group>() {
+                        Status = Status.Error
+                    };
+                }
+
+                bool status = await _groupRepository.UpdateAsync(group);
+
+                if(status) {
+                    return new BaseResponse<Group>() {
+                        Data = group,
+                        Status = Status.Ok
+                    };
+                }
+
+                return new BaseResponse<Group>() {
+                    Status = Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+               throw;
+            }
         }
     }
 }

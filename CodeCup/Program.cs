@@ -23,7 +23,9 @@ builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connec
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IVoteRepository, VoteRepository>();
+builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IGroupService, GroupService>();
+builder.Services.AddTransient<IVotingService, VotingService>();
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSignalR(options =>
