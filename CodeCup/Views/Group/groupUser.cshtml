@@ -144,7 +144,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade" id="staticChooseNameAndSeparator" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
@@ -165,7 +165,28 @@
                     </div>
                 </div>
 
-                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameAndSpectatorBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="d-flex justify-content-start flex-column modal-body">
+
+                <label class="m-2 p-1">Введите новое имя</label>
+                <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
 
             </div>
         </div>
@@ -179,7 +200,7 @@
 <script>
     let isFullConsent = false;
     let groupId = "@Html.Raw(guidValue)";
-    let currentUsername = {name : "" , id : 0}
+    let currentUsername = {name : "" , id : 0, spectator : 1}
     let messageNotConsent = document.querySelector('.message--no--consent');
     var cardDivs = document.querySelectorAll('.card--vote');
     let cardsVoting = document.querySelectorAll(".card--vote");
@@ -191,7 +212,10 @@
     let usernameField = document.getElementById("nameField");
     let isSpectatorField = document.getElementById('isSpectatorField')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
-    let usernameDropdownItem = document.getElementById('usernameDropdownItem')
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
+    let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
+    let chooseNameModal = document.getElementById('staticChooseName')
+    let newUsernameField = document.getElementById('newUsernameField')
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -231,17 +255,29 @@
         window.location.href = "/Group/CreateGroup";
     })
 
-    chooseNameBtn.addEventListener("click", function () {
+    chooseNameAndSpectatorBtn.addEventListener("click", function () {
 
         let newUsername = usernameField.value
-        let Spectator = 1;
 
         if (isSpectatorField.checked)
-            Spectator = 0
+            currentUsername.spectator = 0
         else 
-            Spectator = 1
+            currentUsername.spectator = 1
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, Spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseNameAndSeparator').modal('toggle');
+    });
+
+    chooseNameBtn.addEventListener("click", function () {
+        let newUsername = newUsernameField.value
+
+        console.log(currentUsername.spectator)
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -249,6 +285,9 @@
         $('#staticChooseName').modal('toggle');
     });
 
+    usernameDropdownItem.addEventListener("click", function () {
+        $('#staticChooseName').modal("show")
+    })
 
     hubConnection.on("StartNewVoting", function() {
         messageNotConsent.classList.add("d-none");
@@ -291,13 +330,12 @@
      hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
         let userUpadated = usersInGroup.find(user => user.id == userId);
         let index = usersInGroup.indexOf(userUpadated);
-
+        
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
 
-        usernameDropdownItem.children[0].textContent = newUsername
-
         for(let i = 0; i < userCards.length; i++) {
+            console.log(userCards[i].children[1].textContent == oldName)
             if(userCards[i].children[1].textContent == oldName) {
                 userCards[i].children[1].textContent = newUsername
                 break;
@@ -314,7 +352,7 @@
 
             usernameField.value = currentUsername.name
 
-            usernameDropdownItem.children[0].textContent = currentUsername.name
+            usernameDropdownItem.textContent = currentUsername.name
 
             console.log("Status is " + statusGroup)
 
@@ -373,7 +411,7 @@
     }
 
     window.addEventListener('load', function() {
-        $('#staticChooseName').modal('show');
+        $('#staticChooseNameAndSeparator').modal('show');
     });
 
 

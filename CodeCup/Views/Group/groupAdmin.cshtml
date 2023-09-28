@@ -143,7 +143,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal fade" id="staticChooseNameAndSeparator" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content ">
 
@@ -164,12 +164,33 @@
                         </div>
                     </div>
 
-                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameAndSpectatorBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
 
                 </div>
             </div>
         </div>
-</div>
+    </div>
+
+    <div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content ">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="d-flex justify-content-start flex-column modal-body">
+
+                    <label class="m-2 p-1">Введите новое имя</label>
+                    <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
  </div>
 
@@ -184,7 +205,7 @@
     let value = 0;
     let isFullConsent = false;
     let average = 0;
-    let currentUsername = {name : "", id : "0"}
+    let currentUsername = {name : "", id : "0", spectator : "1"}
     let isVoting = true;
 
     let stopBtn = document.getElementById("stopBtn")
@@ -197,9 +218,13 @@
     let cardsVoting = document.querySelectorAll(".card--vote");
     let modalCloseBtn = document.getElementById("modalCLoseBtn")
     let usernameField = document.getElementById('nameField')
+    let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
     let isSpectatorField = document.getElementById('isSpectatorField')
-    let usernameDropdownItem = document.getElementById('usernameDropdownItem')
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
+    let usernameDropdownItem = usernameDropdown.children[0]
+    let chooseNameModal = document.getElementById('staticChooseName')
+    let newUsernameField = document.getElementById('newUsernameField')
 
     document.getElementById("CurrentName").textContent = currentUsername.name
 
@@ -329,7 +354,7 @@
 
             usernameField.value = currentUsername.name
 
-            usernameDropdownItem.children[0].textContent = currentUsername.name
+            usernameDropdownItem.textContent = currentUsername.name
         }   
 
         for(let i = 0; i < users.length; i++) {
@@ -360,6 +385,10 @@
 
     });
 
+    usernameDropdownItem.addEventListener("click", function () {
+        $('#staticChooseName').modal("show")
+    })
+
     newVotingBtn.addEventListener("click", function () {
         hubConnection.invoke("StartNewVoting", groupId)
             .catch(function (err) {
@@ -382,21 +411,31 @@
     });
 
     chooseNameBtn.addEventListener("click", function () {
+        let newUsername = newUsernameField.value
 
-        let newUsername = usernameField.value
-        let Spectator = 1;
-
-        if (isSpectatorField.checked )
-            Spectator = 0
-        else 
-            Spectator = 1
-
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, Spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
 
-        $('#staticChooseName').modal('toggle');
+        $('#chooseNameModal').modal('toggle');
+    });
+
+    chooseNameAndSpectatorBtn.addEventListener("click", function () {
+
+        let newUsername = usernameField.value
+
+        if (isSpectatorField.checked )
+            currentUsername.spectator = 0
+        else 
+            currentUsername.spectator = 1
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseNameAndSeparator').modal('toggle');
     });
 
     window.onbeforeunload = function() {
@@ -406,7 +445,7 @@
         });
     }
     window.addEventListener('load', function() {
-        $('#staticChooseName').modal('show');
+        $('#staticChooseNameAndSeparator').modal('show');
     });
 
     hubConnection.start()

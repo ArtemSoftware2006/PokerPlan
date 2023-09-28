@@ -27,7 +27,8 @@ namespace Service.Impl
                     Name = model.Name,
                     GroupId = Guid.Parse(model.GroupId),
                     Role = model.Role,
-                    DateCreated = DateTime.Now
+                    DateCreated = DateTime.Now,
+                    IsSpectator = Spectator.User
                 };
 
                 bool status = await _userRepository.CreateAsync(user);
