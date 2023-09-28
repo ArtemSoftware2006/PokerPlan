@@ -95,6 +95,14 @@ namespace CodeCup.Hubs
                 user.Name = username;
                 user.IsSpectator = (Spectator)int.Parse(isSpectator);
 
+                if(user.IsSpectator == Spectator.Spectator)  {
+                    var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId));
+
+                    await _voteService.DeleteRow(votes.ToList());
+                }
+                    
+                
+
                 await _userService.UpdateAsync(user);
 
                 _logger.LogInformation(userId + " changed name to " + username);
