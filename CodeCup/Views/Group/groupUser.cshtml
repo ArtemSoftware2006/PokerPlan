@@ -216,7 +216,8 @@
     let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
     let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
-
+    let currentNameMainField = document.getElementById("CurrentName")
+    
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
@@ -334,6 +335,13 @@
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
 
+        if(userId == currentUsername.id) {
+            currentNameMainField.textContent = newUsername
+            currentUsername.name = newUsername;
+            usernameDropdown.textContent = newUsername
+            usernameDropdownItem.textContent = newUsername
+        }
+
         for(let i = 0; i < userCards.length; i++) {
             console.log(userCards[i].children[1].textContent == oldName)
             if(userCards[i].children[1].textContent == oldName) {
@@ -348,7 +356,7 @@
 
         if(currentUsername.name === "") {
             currentUsername = users[users.length - 1]
-            document.getElementById("CurrentName").textContent = currentUsername.name ;
+            currentNameMainField.textContent = currentUsername.name ;
 
             usernameField.value = currentUsername.name
 

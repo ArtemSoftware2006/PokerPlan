@@ -205,7 +205,7 @@
     let value = 0;
     let isFullConsent = false;
     let average = 0;
-    let currentUsername = {name : "", id : "0", spectator : "1"}
+    let currentUsername = {name : "", id : "0", spectator : 1}
     let isVoting = true;
 
     let stopBtn = document.getElementById("stopBtn")
@@ -222,11 +222,12 @@
     let chooseNameBtn = document.getElementById('chooseNameBtn')
     let isSpectatorField = document.getElementById('isSpectatorField')
     let usernameDropdown = document.getElementById('usernameDropdownItem')
-    let usernameDropdownItem = usernameDropdown.children[0]
+    //let usernameDropdownItem = usernameDropdown.children[0]
     let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
+    let currentNameMainField = document.getElementById("CurrentName")
 
-    document.getElementById("CurrentName").textContent = currentUsername.name
+    currentNameMainField.textContent = currentUsername.name
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -337,6 +338,13 @@
 
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
+
+        if(userId == currentUsername.id) {
+            currentNameMainField.textContent = newUsername
+            currentUsername.name = newUsername;
+            usernameDropdown.textContent = newUsername
+            usernameDropdownItem.textContent = newUsername
+        }
 
         for(let i = 0; i < userCards.length; i++) {
             if(userCards[i].children[1].textContent == oldName) {
