@@ -1,5 +1,3 @@
-using DAL.Impl;
-using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
@@ -84,6 +82,23 @@ namespace CodeCup.Hubs
                 }
             }
             
+        }
+
+        public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator) 
+        {
+            var userResponse = await _userService.GetAsync(int.Parse(userId));
+
+            if (userResponse.Status == Status.Ok)
+            {
+                var user = userResponse.Data;
+
+                user.Name = username;
+                user.IsSpectator = (Spectator)int.Parse(isSpectator);
+
+                await _userService.UpdateAsync(user);
+
+                await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);      
+            }
         }
         public async Task DeleteVote(string groupId, string userId)
         {

@@ -144,5 +144,34 @@ namespace Service.Impl
                 };
             }
         }
+
+        public async Task<BaseResponse<bool>> UpdateAsync(User model)
+        {
+            try
+            {
+                bool status = await _userRepository.UpdateAsync(model);
+
+                if (status)
+                    return new BaseResponse<bool>() {
+                        Data = true,
+                        Status = Status.Ok
+                    };
+                
+                return new BaseResponse<bool>() {
+                    Status = Status.Error,
+                };
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<bool>() {
+                    Data = false,
+                    Status = Status.Error
+                }; 
+            }
+        }
     }
 }
