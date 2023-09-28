@@ -46,6 +46,8 @@
                 <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     Пригласить
                 </button>
+
+                <div id="history" class="ms-3"><img  src="@Url.Content("~/History.png")" alt="История"/></div>
             </div>
          
         </div>
@@ -222,10 +224,10 @@
     let chooseNameBtn = document.getElementById('chooseNameBtn')
     let isSpectatorField = document.getElementById('isSpectatorField')
     let usernameDropdown = document.getElementById('usernameDropdownItem')
-    //let usernameDropdownItem = usernameDropdown.children[0]
     let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
     let currentNameMainField = document.getElementById("CurrentName")
+    let historyBtn = document.getElementById("history")
 
     currentNameMainField.textContent = currentUsername.name
 
