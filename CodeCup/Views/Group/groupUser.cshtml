@@ -145,11 +145,11 @@
                 <div class="m-2 d-flex justify-content-between">
                     <div>Присоединиться как наблюдатель</div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                        <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
                     </div>
                 </div>
 
-                <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
 
             </div>
         </div>
@@ -173,6 +173,8 @@
     let usersInGroup = []
     let userCards = document.querySelectorAll(".card--container");
     let usernameField = document.getElementById("nameField");
+    let isSpectatorField = document.getElementById('isSpectatorField')
+    let chooseNameBtn = document.getElementById('chooseNameBtn')
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -212,6 +214,24 @@
         window.location.href = "/Group/CreateGroup";
     })
 
+    chooseNameBtn.addEventListener("click", function () {
+
+        let newUsername = usernameField.value
+        let Spectator = 1;
+
+        if (isSpectatorField.checked)
+            Spectator = 0
+        else 
+            Spectator = 1
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, Spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseName').modal('toggle');
+    });
+
 
     hubConnection.on("StartNewVoting", function() {
         messageNotConsent.classList.add("d-none");
@@ -250,6 +270,22 @@
         });
      
     });
+
+     hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
+        let userUpadated = usersInGroup.find(user => user.id == userId);
+        let index = usersInGroup.indexOf(userUpadated);
+
+        let oldName = usersInGroup[index].name
+        usersInGroup[index].name = newUsername;
+
+        for(let i = 0; i < userCards.length; i++) {
+            if(userCards[i].children[1].textContent == oldName) {
+                userCards[i].children[1].textContent = newUsername
+                break;
+            } 
+        }
+    });
+
 
     hubConnection.on("UserAdded", function(users, statusGroup) {
 

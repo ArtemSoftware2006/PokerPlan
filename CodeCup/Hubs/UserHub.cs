@@ -27,7 +27,7 @@ namespace CodeCup.Hubs
        
         public async Task CreateGroup(string groupId)
         {
-            var response = await _userService.CreateAsync(new Domain.ViewModel.UserVm() {
+            var response = await _userService.CreateAsync(new UserVm() {
                 Name = NAME_ADMIN,
                 Role = Role.Admin,
                 GroupId = groupId
@@ -96,6 +96,9 @@ namespace CodeCup.Hubs
                 user.IsSpectator = (Spectator)int.Parse(isSpectator);
 
                 await _userService.UpdateAsync(user);
+
+                _logger.LogInformation(userId + " changed name to " + username);
+                _logger.LogInformation(userId + " choose spectator to " + isSpectator);
 
                 await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);      
             }
