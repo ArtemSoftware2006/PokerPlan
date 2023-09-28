@@ -29,6 +29,15 @@
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
                         <li>
+                            <div class="dropdown-item" id="usernameDropdownItem">
+                                <div class="d-flex justify-content-between">
+                                    <p></p>
+                                    <img src="@Url.Content("~/changeNameIcon.png")" alt="изменить имя">
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
                             <a class="dropdown-item" id="logout" href="@Url.Action("CreateGroup", "Group")">Выйти</a>
                         </li>
                     </ul>
@@ -190,6 +199,7 @@
     let usernameField = document.getElementById('nameField')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
     let isSpectatorField = document.getElementById('isSpectatorField')
+    let usernameDropdownItem = document.getElementById('usernameDropdownItem')
 
     document.getElementById("CurrentName").textContent = currentUsername.name
 
@@ -318,6 +328,8 @@
             document.getElementById("CurrentName").textContent = currentUsername.name ;
 
             usernameField.value = currentUsername.name
+
+            usernameDropdownItem.children[0].textContent = currentUsername.name
         }   
 
         for(let i = 0; i < users.length; i++) {

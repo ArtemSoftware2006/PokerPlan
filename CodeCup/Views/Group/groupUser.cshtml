@@ -24,12 +24,21 @@
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
                 </div>
-                
+
                 <div class="dropdown">
                     <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
                         data-bs-toggle="dropdown" aria-expanded="false">
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
+                        <li>
+                            <div class="dropdown-item" id="usernameDropdownItem">
+                                <div class="d-flex justify-content-between">
+                                    <p></p>
+                                    <img src="@Url.Content("~/changeNameIcon.png")" alt="изменить имя">
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" id="logout" href="#">Выйти</a>
                         </li>
@@ -182,6 +191,7 @@
     let usernameField = document.getElementById("nameField");
     let isSpectatorField = document.getElementById('isSpectatorField')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
+    let usernameDropdownItem = document.getElementById('usernameDropdownItem')
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -285,6 +295,8 @@
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
 
+        usernameDropdownItem.children[0].textContent = newUsername
+
         for(let i = 0; i < userCards.length; i++) {
             if(userCards[i].children[1].textContent == oldName) {
                 userCards[i].children[1].textContent = newUsername
@@ -301,6 +313,8 @@
             document.getElementById("CurrentName").textContent = currentUsername.name ;
 
             usernameField.value = currentUsername.name
+
+            usernameDropdownItem.children[0].textContent = currentUsername.name
 
             console.log("Status is " + statusGroup)
 

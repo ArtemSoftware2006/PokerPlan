@@ -9,7 +9,7 @@ namespace CodeCup.Hubs
 {
     public class UserHub: Hub
     {
-        const string NAME_ADMIN = "Администартор";
+        const string NAME_ADMIN = "Администратор";
         private readonly ILogger<UserHub> _logger;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
