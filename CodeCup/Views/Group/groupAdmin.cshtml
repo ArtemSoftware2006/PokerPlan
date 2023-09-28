@@ -20,7 +20,7 @@
                 <label class="form-check-label m-2 fs-4">Наблюдатель</label>
 
                 <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
+                    <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorFieldMain">
                 </div>
 
                 <div class="dropdown">
@@ -223,6 +223,7 @@
     let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
     let isSpectatorField = document.getElementById('isSpectatorField')
+    let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
     let usernameDropdown = document.getElementById('usernameDropdownItem')
     let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
@@ -394,6 +395,45 @@
             });
 
     });
+
+    isSpectatorFieldMain.addEventListener("change", function () {
+        if(isSpectatorFieldMain.checked) {
+            currentUsername.spectator = 0
+
+            for(let j = 0; j < userCards.length; j++) {
+
+                userCards[j].children[0].classList.remove("card--add--user");
+
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.add("card--add--user--shower");
+                }
+
+                cardsVoting.forEach(function(card) {
+                    card.classList.add("d-none");
+                });
+
+            }
+
+        } else {
+            currentUsername.spectator = 1
+
+            for(let j = 0; j < userCards.length; j++) {
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.remove("card--add--user--shower");
+                    userCards[j].children[0].classList.add("card--add--user");
+                }
+            }
+
+            cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });
+        }
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    })
 
     usernameDropdownItem.addEventListener("click", function () {
         $('#staticChooseName').modal("show")

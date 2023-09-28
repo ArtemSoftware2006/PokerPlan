@@ -129,6 +129,15 @@ html {
   justify-content: center;
 }
 
+.card--add--user--shower {
+  background-image: url("../eayIcon.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .card--add--user--value {
   background-image: none;
   font-size: 24px;
