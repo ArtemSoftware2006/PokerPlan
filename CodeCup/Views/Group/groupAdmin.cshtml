@@ -1,4 +1,4 @@
-@model GroupVm
+@model GroupModel
 @{
     ViewData["Title"] = "Группа";
 }
@@ -16,11 +16,27 @@
             </div>
 
             <div class="d-flex justify-content-center align-items-center">
+
+                <label class="form-check-label m-2 fs-4">Наблюдатель</label>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorFieldMain">
+                </div>
+
                 <div class="dropdown">
                     <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
                         data-bs-toggle="dropdown" aria-expanded="false">
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
+                        <li>
+                            <div class="dropdown-item" id="usernameDropdownItem">
+                                <div class="d-flex justify-content-between">
+                                    <p></p>
+                                    <img src="@Url.Content("~/changeNameIcon.png")" alt="изменить имя">
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" id="logout" href="@Url.Action("CreateGroup", "Group")">Выйти</a>
                         </li>
@@ -30,6 +46,8 @@
                 <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     Пригласить
                 </button>
+
+                <div id="history" class="ms-3"><img  src="@Url.Content("~/History.png")" alt="История"/></div>
             </div>
          
         </div>
@@ -37,28 +55,6 @@
 </header>
 
 <div class="d-flex flex-column m-2 flex-grow-1 justefy-content-center text-center">
-
-    <div class="modal fade" id="staticBackdrop" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="d-flex flex-column modal-body">
-
-                    <div id="linkToCopy" class="p-1 m-2 addLink--container">
-                        @Model.Link
-                    </div>
-
-                    <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Копировать</button>
-
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center">
 
@@ -127,6 +123,77 @@
         <div class="card--vote m-1">Кофе</div>
     </div>
 
+     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="modalCLoseBtn" aria-label="Close"></button>
+                </div>
+
+                <div class="d-flex flex-column modal-body">
+
+                    <div id="linkToCopy" class="p-1 m-2 addLink--container">
+                        @Model.Link
+                    </div>
+
+                    <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Копировать</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="staticChooseNameAndSeparator" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content ">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="d-flex justify-content-start flex-column modal-body">
+
+                    <label class="m-2 p-1">Имя</label>
+                    <input id="nameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                     <div class="m-2 d-flex justify-content-between">
+                        <div>Присоединиться как наблюдатель</div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
+                        </div>
+                    </div>
+
+                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameAndSpectatorBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content ">
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="d-flex justify-content-start flex-column modal-body">
+
+                    <label class="m-2 p-1">Введите новое имя</label>
+                    <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
  </div>
 
 
@@ -136,6 +203,13 @@
 
     let groupId = '@Html.Raw(guidValue)';
     let isVotingStopped = false;
+    let usersInGroup = []
+    let value = 0;
+    let isFullConsent = false;
+    let average = 0;
+    let currentUsername = {name : "", id : "0", spectator : 1}
+    let isVoting = true;
+
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
     let againVotingBtn = document.getElementById("againVotingBtn")
@@ -144,14 +218,19 @@
     var averageDiv = document.getElementById('average');
     let userCards = document.querySelectorAll(".card--container");
     let cardsVoting = document.querySelectorAll(".card--vote");
-    let usersInGroup = []
-    let value = 0;
-    let isFullConsent = false;
-    let average = 0;
-    let currentUsername = {name : "", id : "0"}
-    let isVoting = true;
+    let modalCloseBtn = document.getElementById("modalCLoseBtn")
+    let usernameField = document.getElementById('nameField')
+    let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
+    let chooseNameBtn = document.getElementById('chooseNameBtn')
+    let isSpectatorField = document.getElementById('isSpectatorField')
+    let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
+    let chooseNameModal = document.getElementById('staticChooseName')
+    let newUsernameField = document.getElementById('newUsernameField')
+    let currentNameMainField = document.getElementById("CurrentName")
+    let historyBtn = document.getElementById("history")
 
-    document.getElementById("CurrentName").textContent = currentUsername.name
+    currentNameMainField.textContent = currentUsername.name
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -256,11 +335,37 @@
         }
     });
 
+    hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
+        let userUpadated = usersInGroup.find(user => user.id == userId);
+        let index = usersInGroup.indexOf(userUpadated);
+
+        let oldName = usersInGroup[index].name
+        usersInGroup[index].name = newUsername;
+
+        if(userId == currentUsername.id) {
+            currentNameMainField.textContent = newUsername
+            currentUsername.name = newUsername;
+            usernameDropdown.textContent = newUsername
+            usernameDropdownItem.textContent = newUsername
+        }
+
+        for(let i = 0; i < userCards.length; i++) {
+            if(userCards[i].children[1].textContent == oldName) {
+                userCards[i].children[1].textContent = newUsername
+                break;
+            } 
+        }
+    });
+
     hubConnection.on("UserAdded", function(users, statusGroup) {
 
         if(currentUsername.name === "") {
             currentUsername = users[users.length - 1]
             document.getElementById("CurrentName").textContent = currentUsername.name ;
+
+            usernameField.value = currentUsername.name
+
+            usernameDropdownItem.textContent = currentUsername.name
         }   
 
         for(let i = 0; i < users.length; i++) {
@@ -291,6 +396,49 @@
 
     });
 
+    isSpectatorFieldMain.addEventListener("change", function () {
+        if(isSpectatorFieldMain.checked) {
+            currentUsername.spectator = 0
+
+            for(let j = 0; j < userCards.length; j++) {
+
+                userCards[j].children[0].classList.remove("card--add--user");
+
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.add("card--add--user--shower");
+                }
+
+                cardsVoting.forEach(function(card) {
+                    card.classList.add("d-none");
+                });
+
+            }
+
+        } else {
+            currentUsername.spectator = 1
+
+            for(let j = 0; j < userCards.length; j++) {
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.remove("card--add--user--shower");
+                    userCards[j].children[0].classList.add("card--add--user");
+                }
+            }
+
+            cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });
+        }
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    })
+
+    usernameDropdownItem.addEventListener("click", function () {
+        $('#staticChooseName').modal("show")
+    })
+
     newVotingBtn.addEventListener("click", function () {
         hubConnection.invoke("StartNewVoting", groupId)
             .catch(function (err) {
@@ -312,12 +460,43 @@
             });
     });
 
+    chooseNameBtn.addEventListener("click", function () {
+        let newUsername = newUsernameField.value
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#chooseNameModal').modal('toggle');
+    });
+
+    chooseNameAndSpectatorBtn.addEventListener("click", function () {
+
+        let newUsername = usernameField.value
+
+        if (isSpectatorField.checked )
+            currentUsername.spectator = 0
+        else 
+            currentUsername.spectator = 1
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseNameAndSeparator').modal('toggle');
+    });
+
     window.onbeforeunload = function() {
         hubConnection.invoke("CloseGroup", groupId)
         .catch(function (err) {
             return console.error(err.toString());
         });
     }
+    window.addEventListener('load', function() {
+        $('#staticChooseNameAndSeparator').modal('show');
+    });
 
     hubConnection.start()
         .then(function () {
@@ -336,6 +515,7 @@
 
     clipboard.on('success', function(e) {
         e.clearSelection();
+
         var copyBtn = document.getElementById("copyBtn");
         copyBtn.classList.add("btn--blue--clicked")
         copyBtn.textContent = "Скопированно"

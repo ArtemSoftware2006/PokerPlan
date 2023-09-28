@@ -1,8 +1,10 @@
-namespace Новая_папка.Models
+namespace Domain.ViewModel
 {
-    public class UsersVote
+    public class UserVoteVm
     {
+    
         public string Name { get; set; }        
         public string Value { get; set; }
+    
     }
 }

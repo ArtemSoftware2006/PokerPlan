@@ -2,7 +2,9 @@ using CodeCup.Hubs;
 using DAL;
 using DAL.Impl;
 using DAL.interfaces;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using NLog.Web;
 using Service.Impl;
 using Service.Interfaces;
 using Новая_папка.middlewares;
@@ -19,13 +21,22 @@ var connection = config["ConnectionStrings:DefaultConnection"];
 
 builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection,new MySqlServerVersion(new Version(8, 0, 31))),10);
 
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
+
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IGroupRepository, GroupRepository>();
 builder.Services.AddTransient<IVoteRepository, VoteRepository>();
+builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IGroupService, GroupService>();
+builder.Services.AddTransient<IVotingService, VotingService>();
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
 
 var app = builder.Build();
 
@@ -40,6 +51,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseExceptionHandler("/Error/Fatal");
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseCors(option => {
     option.AllowAnyOrigin();
     option.AllowAnyHeader();
@@ -47,9 +63,10 @@ app.UseCors(option => {
     option.AllowCredentials();
     option.WithOrigins("http://127.0.0.1:5501");
 });
-app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
+app.UseHttpsRedirection();
 app.UseRouting();
 
 app.MapHub<UserHub>("/user");

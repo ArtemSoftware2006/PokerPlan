@@ -3,7 +3,9 @@ using DAL.Impl;
 using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
+using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Service.Interfaces;
 using Новая_папка.Models;
 
 namespace Новая_папка.Controllers
@@ -12,12 +14,12 @@ namespace Новая_папка.Controllers
     public class GroupController : Controller
     {
         private readonly ILogger<GroupController> _logger;
-        private readonly IGroupRepository _groupRepository;
-        private readonly IUserRepository _userRepository;
-        public GroupController(ILogger<GroupController> logger, IGroupRepository groupRepository, IUserRepository userRepository)
+        private readonly IGroupService _groupService;
+        private readonly IUserService _userService;
+        public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService)
         {
-            _userRepository = userRepository;
-            _groupRepository = groupRepository;
+            _userService = userService;
+            _groupService = groupService;
             _logger = logger;
         }
         [HttpGet]
@@ -32,36 +34,45 @@ namespace Новая_папка.Controllers
 
             string domainName = Request.Host.Value;
 
-            Guid id = Guid.NewGuid();
-            string link = domainName  + "/Group/Join/" + id;
-            await  _groupRepository.CreateAsync(new Group() 
+            Guid groupId = Guid.NewGuid();
+            string link = domainName  + "/Group/Join/" + groupId;
+
+            await  _groupService.CreateAsync(new GroupVm() 
             {
-                DateCreated = DateTime.Now, Id = id, Name = name, Status = StatusEntity.Active
+                Id = groupId, Name = name
             });
 
-            return View("groupAdmin", new GroupVm() {Name = name, Link = link, Id=id.ToString()});
+            return View("groupAdmin", new GroupModel() {Name = name, Link = link, Id=groupId.ToString()});
         }
         [HttpGet("{group}")]
         public async Task<IActionResult> Join(string group)
         {
             try
             {
-                string domainName = Request.Host.Value;
+                var response = await _groupService.GetAsync(group);
 
-                string link = domainName + "/Group/Join/" + group;
-
-                var groupDb = await _groupRepository.GetAsync(Guid.Parse(group));
-
-                var countUsers = _userRepository.GetAllAsync().Count(x => x.GroupId == Guid.Parse(group));
-
-                if (!(countUsers < 6))
+                if (response.Status == Status.Ok)
                 {
-                    return Redirect("/Error/NotFound");
-                }
+                    var responseUser =  _userService.GetAll();
 
-                if (groupDb != null && groupDb?.Status != StatusEntity.Closed)
-                {
-                    return View("groupUser", new GroupVm() {Name = groupDb.Name, Id = group, Link = link});
+                    if (response.Status == Status.Ok)
+                    {
+                        string domainName = Request.Host.Value;
+
+                        string link = domainName + "/Group/Join/" + group;
+
+                        var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(group));
+
+                        if (!(countUsers < 6))
+                        {
+                            return Redirect("/Error/NotFound");
+                        }
+
+                        if (response.Data != null && response.Data.Status != StatusEntity.Closed)
+                        {
+                            return View("groupUser", new GroupModel() {Name = response.Data.Name, Id = group, Link = link});
+                        }     
+                    } 
                 }
                 
                 return Redirect("/Error/NotFound");

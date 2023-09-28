@@ -1,4 +1,4 @@
-@model GroupVm
+@model GroupModel
 @{
     ViewData["Title"] = "Группа";
 }
@@ -18,11 +18,27 @@
             </div>
 
             <div class="d-flex justify-content-center align-items-center">
+
+                <label class="form-check-label m-2 fs-4">Наблюдатель</label>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorFieldMain">
+                </div>
+
                 <div class="dropdown">
                     <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
                         data-bs-toggle="dropdown" aria-expanded="false">
                     </a>
                     <ul class="dropdown-menu m-1 ms-3">
+                        <li>
+                            <div class="dropdown-item" id="usernameDropdownItem">
+                                <div class="d-flex justify-content-between">
+                                    <p></p>
+                                    <img src="@Url.Content("~/changeNameIcon.png")" alt="изменить имя">
+                                </div>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" id="logout" href="#">Выйти</a>
                         </li>
@@ -32,6 +48,8 @@
                 <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     Пригласить
                 </button>
+
+                <div id="history" class="ms-3"><img  src="@Url.Content("~/History.png")" alt="История"/></div>
             </div>
          
         </div>
@@ -128,12 +146,63 @@
     </div>
 </div>
 
+<div class="modal fade" id="staticChooseNameAndSeparator" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="d-flex flex-column modal-body">
+                
+                <label class="mb-2 m-2 p-1">Имя</label>
+                <input id="nameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                <div class="m-2 d-flex justify-content-between">
+                    <div>Присоединиться как наблюдатель</div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
+                    </div>
+                </div>
+
+                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameAndSpectatorBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="d-flex justify-content-start flex-column modal-body">
+
+                <label class="m-2 p-1">Введите новое имя</label>
+                <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
+
+                <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
     let isFullConsent = false;
     let groupId = "@Html.Raw(guidValue)";
-    let currentUsername = {name : "" , id : 0}
+    let currentUsername = {name : "" , id : 0, spectator : 1}
     let messageNotConsent = document.querySelector('.message--no--consent');
     var cardDivs = document.querySelectorAll('.card--vote');
     let cardsVoting = document.querySelectorAll(".card--vote");
@@ -142,7 +211,16 @@
     var logoutBtn = document.getElementById('logout');
     let usersInGroup = []
     let userCards = document.querySelectorAll(".card--container");
-
+    let usernameField = document.getElementById("nameField");
+    let isSpectatorField = document.getElementById('isSpectatorField')
+    let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
+    let chooseNameBtn = document.getElementById('chooseNameBtn')
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
+    let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
+    let chooseNameModal = document.getElementById('staticChooseName')
+    let newUsernameField = document.getElementById('newUsernameField')
+    let currentNameMainField = document.getElementById("CurrentName")
+    
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
@@ -179,6 +257,79 @@
             return console.error(err.toString());
         });
         window.location.href = "/Group/CreateGroup";
+    })
+
+    isSpectatorFieldMain.addEventListener("change", function () {
+        if(isSpectatorFieldMain.checked) {
+            currentUsername.spectator = 0
+
+            for(let j = 0; j < userCards.length; j++) {
+
+                userCards[j].children[0].classList.remove("card--add--user");
+
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.add("card--add--user--shower");
+                }
+
+                 cardsVoting.forEach(function(card) {
+                    card.classList.add("d-none");
+                });
+            }
+
+        } else {
+            currentUsername.spectator = 1
+
+            for(let j = 0; j < userCards.length; j++) {
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.remove("card--add--user--shower");
+                    userCards[j].children[0].classList.add("card--add--user");
+                }
+            }
+
+             cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });
+        }
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    })
+
+
+    chooseNameAndSpectatorBtn.addEventListener("click", function () {
+
+        let newUsername = usernameField.value
+
+        if (isSpectatorField.checked)
+            currentUsername.spectator = 0
+        else 
+            currentUsername.spectator = 1
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseNameAndSeparator').modal('toggle');
+    });
+
+    chooseNameBtn.addEventListener("click", function () {
+        let newUsername = newUsernameField.value
+
+        console.log(currentUsername.spectator)
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseName').modal('toggle');
+    });
+
+    usernameDropdownItem.addEventListener("click", function () {
+        $('#staticChooseName').modal("show")
     })
 
     hubConnection.on("StartNewVoting", function() {
@@ -219,11 +370,39 @@
      
     });
 
+     hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
+        let userUpadated = usersInGroup.find(user => user.id == userId);
+        let index = usersInGroup.indexOf(userUpadated);
+        
+        let oldName = usersInGroup[index].name
+        usersInGroup[index].name = newUsername;
+
+        if(userId == currentUsername.id) {
+            currentNameMainField.textContent = newUsername
+            currentUsername.name = newUsername;
+            usernameDropdown.textContent = newUsername
+            usernameDropdownItem.textContent = newUsername
+        }
+
+        for(let i = 0; i < userCards.length; i++) {
+            console.log(userCards[i].children[1].textContent == oldName)
+            if(userCards[i].children[1].textContent == oldName) {
+                userCards[i].children[1].textContent = newUsername
+                break;
+            } 
+        }
+    });
+
+
     hubConnection.on("UserAdded", function(users, statusGroup) {
 
         if(currentUsername.name === "") {
             currentUsername = users[users.length - 1]
-            document.getElementById("CurrentName").textContent = currentUsername.name ;
+            currentNameMainField.textContent = currentUsername.name ;
+
+            usernameField.value = currentUsername.name
+
+            usernameDropdownItem.textContent = currentUsername.name
 
             console.log("Status is " + statusGroup)
 
@@ -274,6 +453,18 @@
         window.location.href = '/Error/GroupClosed';
     });
 
+     window.onbeforeunload = function() {
+         hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    window.addEventListener('load', function() {
+        $('#staticChooseNameAndSeparator').modal('show');
+    });
+
+
     hubConnection.start()
         .then(function () {
             hubConnection.invoke("JoinGroupFromLink", groupId)
@@ -285,11 +476,13 @@
             return console.error(err.toString());
         });
 
+
     var clipboard = new ClipboardJS('#copyBtn');
 
     clipboard.on('success', function(e) {
         e.clearSelection();
-         var copyBtn = document.getElementById("copyBtn");
+
+        var copyBtn = document.getElementById("copyBtn");
         copyBtn.classList.add("btn--blue--clicked")
         copyBtn.textContent = "Скопированно"
     });

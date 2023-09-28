@@ -1,117 +1,156 @@
-using DAL.Impl;
-using DAL.interfaces;
 using Domain.Entity;
 using Domain.Enum;
+using Domain.ViewModel;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+using Service.Interfaces;
 using Новая_папка.Models;
 
 namespace CodeCup.Hubs
 {
     public class UserHub: Hub
     {
+        const string NAME_ADMIN = "Администратор";
         private readonly ILogger<UserHub> _logger;
-        private readonly IGroupRepository _groupRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly IVoteRepository _voteRepository;
+        private readonly IGroupService _groupService;
+        private readonly IUserService _userService;
+        private readonly IVotingService _voteService;
         private List<string> names;
-        public UserHub(ILogger<UserHub> logger, IGroupRepository groupRepository, IUserRepository userRepository, IVoteRepository voteRepository)
+        public UserHub(ILogger<UserHub> logger, IGroupService groupService, IUserService userService, IVotingService voteService)
         {
             names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
 
-            _voteRepository = voteRepository;
-            _userRepository = userRepository;
-            _groupRepository = groupRepository;
+            _voteService = voteService;
+            _userService = userService;
+            _groupService = groupService;
             _logger = logger;
         }
        
         public async Task CreateGroup(string groupId)
         {
-            var user = new User() {
-                Name = "Администратор",
-                DateCreated = DateTime.Now,
+            var response = await _userService.CreateAsync(new UserVm() {
+                Name = NAME_ADMIN,
                 Role = Role.Admin,
-                GroupId = Guid.Parse(groupId)
-            };
+                GroupId = groupId
+            });
 
-            _logger.LogInformation("User: {0} created group {1}", user.Name, groupId);
-
-            await _userRepository.CreateAsync(user);
-
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
-
-            UserVm userVm = new UserVm() 
+            if (response.Status == Status.Ok)
             {
-                Name = user.Name,
-                Id = user.Id
-            };
+                 await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
 
-            await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {userVm});
+                UserModel userVm = new UserModel() 
+                {
+                    Name = NAME_ADMIN,
+                    Id = response.Data.Id
+                };
+
+                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserModel>() {userVm});   
+            }
         }
 
         public async Task JoinGroupFromLink(string id)
         {
-            var group = await _groupRepository.GetAsync(Guid.Parse(id));
+            var responseGroup = await _groupService.GetAsync(id);
 
-            var userNames = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
-
-            var maybeNames = names.Except(userNames).ToList();
-
-            _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], id);
-            
-            var user = new User() {
-            Name = maybeNames[0],
-            DateCreated = DateTime.Now,
-            Role = Role.User,
-            GroupId = group.Id
-            };
-
-            await _userRepository.CreateAsync(user);
-
-            var users = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserVm() {Name = x.Name, Id = x.Id}).ToList();
-
-            if (group?.Status != Domain.Enum.StatusEntity.Closed)
+            if (responseGroup.Status == Status.Ok)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users, group.Status);
-            }   
+                var responseUser = _userService.GetAll();
+
+                if (responseUser.Status == Status.Ok)
+                {
+                    var userNames = responseUser.Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
+                    var group = responseGroup.Data;
+                    
+                    var maybeNames = names.Except(userNames).ToList();
+
+                    _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], id);
+                    
+                    var user = new UserVm() {
+                        Name = maybeNames[0],
+                        Role = Role.User,
+                        GroupId = group.Id.ToString()
+                    };
+
+                    await _userService.CreateAsync(user);
+
+                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserModel() {Name = x.Name, Id = x.Id}).ToList();
+
+                    if (group?.Status != StatusEntity.Closed)
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
+                        await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users, group.Status);
+                    }   
+                }
+            }
             
+        }
+
+        public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator) 
+        {
+            var userResponse = await _userService.GetAsync(int.Parse(userId));
+
+            if (userResponse.Status == Status.Ok)
+            {
+                var user = userResponse.Data;
+
+                user.Name = username;
+                user.IsSpectator = (Spectator)int.Parse(isSpectator);
+
+                if(user.IsSpectator == Spectator.Spectator)  {
+                    var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId));
+
+                    await _voteService.DeleteRow(votes.ToList());
+                }
+                    
+                
+
+                await _userService.UpdateAsync(user);
+
+                _logger.LogInformation(userId + " changed name to " + username);
+                _logger.LogInformation(userId + " choose spectator to " + isSpectator);
+
+                await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);      
+            }
         }
         public async Task DeleteVote(string groupId, string userId)
         {
             _logger.LogInformation("User: {0} deleted vote", userId);
 
-            Vote vote = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId)).FirstOrDefault();
+            Vote vote = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId)).FirstOrDefault();
 
             if (vote != null)
             {
-                await _voteRepository.DeleteAsync(vote);
+                await _voteService.DeleteAsync(vote);
             }
         }
         public async Task SetVote(CreateVoteVm model)
         {
-            var group = await _groupRepository.GetAsync(Guid.Parse(model.GroupId));
+            var responseGroup = await _groupService.GetAsync(model.GroupId);
 
-            var user = _userRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(model.GroupId) 
-                && x.Name == model.Username).FirstOrDefault();
-
-            var oldVote = _voteRepository.GetAllAsync().Where(x => x.GroupId == group.Id && x.UserId == user.Id).FirstOrDefault();
-
-            if (oldVote != null)
+            if (responseGroup.Status == Status.Ok)
             {
-                await _voteRepository.DeleteAsync(oldVote);
+                var group = responseGroup.Data;
+
+                var user = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(model.GroupId) 
+                    && x.Name == model.Username).FirstOrDefault();
+
+                var oldVote = _voteService.GetAll().Result.Data.Where(x => x.GroupId == group.Id && x.UserId == user.Id).FirstOrDefault();
+
+                if (oldVote != null)
+                {
+                    await _voteService.DeleteAsync(oldVote);
+                }
+
+                _logger.LogInformation("User: {0} voted : {1}", user.Name, model.Value);
+
+                var vote = new Vote() {
+                    DateCreated = DateTime.Now,
+                    GroupId = group.Id,
+                    Value = model.Value,
+                    UserId = user.Id,
+                };
+
+                await _voteService.CreateAsync(vote);   
             }
-
-            _logger.LogInformation("User: {0} voted : {1}", user.Name, model.Value);
-
-            var vote = new Vote() {
-                DateCreated = DateTime.Now,
-                GroupId = group.Id,
-                Value = model.Value,
-                UserId = user.Id,
-            };
-
-            await _voteRepository.CreateAsync(vote);
 
         }
 
@@ -122,74 +161,93 @@ namespace CodeCup.Hubs
             bool isFullConsent = false;
             double average = 0;
 
-            var usersVotes = (
-                from vote in _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId))
-                join user in _userRepository.GetAllAsync()
-                    on  new {UserId = vote.UserId, vote.GroupId} 
-                    equals new {UserId = user.Id, user.GroupId}
-                select new UsersVote() { Name = user.Name, Value = vote.Value }).ToList();
+            var responseGroup = await _groupService.GetAsync(groupId);
 
-            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
-
-            group.Status = StatusEntity.Stopped;
-
-            await _groupRepository.UpdateAsync(group);
-
-            foreach (UsersVote item in usersVotes)
+            if (responseGroup.Status == Status.Ok)
             {
-                if (!(item.Value == "?" || item.Value == "Кофе"))
+                var group = responseGroup.Data;
+
+                var usersInGroup = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId));
+
+                var usersVotes = _voteService.FinishVoting(groupId, usersInGroup.ToList()).Result.Data;
+
+                group.Status = StatusEntity.Stopped;
+                var responseUpdate = await _groupService.UpdateAsync(group);
+
+                if (responseUpdate.Status == Status.Ok)
                 {
-                    sumValues += float.Parse(item.Value);
-                    countVotind++;
+                    foreach (UserVoteVm item in usersVotes)
+                    {
+                        if (!(item.Value == "?" || item.Value == "Кофе"))
+                        {
+                            sumValues += float.Parse(item.Value);
+                            countVotind++;
+                        }
+                    }
+
+                    if (countVotind != 0)
+                    {
+                        isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
+
+                        average = Math.Round(sumValues / countVotind,1);
+                    }
+                    else    
+                        average = 0;
+                    
+                    await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);      
                 }
             }
-
-            if (countVotind != 0)
-            {
-                isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
-
-                average = Math.Round(sumValues / countVotind,1);
-            }
-            else    
-                average = 0;
-            
-            await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);
         }
         public async Task StartNewVoting(string groupId) 
         {
-            var votes = _voteRepository.GetAllAsync().Where(x => x.GroupId == Guid.Parse(groupId));
+            var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId));
 
-            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+            var responseGroup = await _groupService.GetAsync(groupId);
 
-            group.Status = StatusEntity.Active;
+            if (responseGroup.Status == Status.Ok)
+            {
+                var group = responseGroup.Data;
 
-            await _groupRepository.UpdateAsync(group);
+                group.Status = StatusEntity.Active;
 
-           _voteRepository.DeleteRow(votes.ToList());
+                var responseUpdate = await _groupService.UpdateAsync(group);
 
-            await Clients.Group(groupId).SendAsync("StartNewVoting");
+                if(responseUpdate.Status == Status.Ok) {
+                    await _voteService.DeleteRow(votes.ToList());
+
+                    await Clients.Group(groupId).SendAsync("StartNewVoting");   
+                }
+            }
 
         }
         public async Task CloseGroup(string groupId)
         {
-            var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
-            group.Status = StatusEntity.Closed;
+            var responseGroup = await _groupService.GetAsync(groupId);
 
-            await _groupRepository.UpdateAsync(group);
+            if (responseGroup.Status == Status.Ok)
+            {
+                var group = responseGroup.Data;
+                
+                group.Status = StatusEntity.Closed;
 
-            await Clients.Group(groupId).SendAsync("CloseGroup");
+                var responseUpdate = await _groupService.UpdateAsync(group);
+
+                if (responseUpdate.Status == Status.Ok)
+                    await Clients.Group(groupId).SendAsync("CloseGroup");   
+            }
         }
         public async Task Logout(string groupId, string userId) 
         {            
-            var user = await _userRepository.GetAsync(int.Parse(userId));
+            var response = await _userService.GetAsync(int.Parse(userId));
 
-            if (user != null)
+            if (response.Status == Status.Ok)
             {
-                await _userRepository.DeleteAsync(user);
+                User user = response.Data;
 
-                var votes = _voteRepository.GetAllAsync().Where(x => x.UserId == user.Id && x.GroupId == Guid.Parse(groupId));
+                await _userService.DeleteAsync(user);
+                var votes = _voteService.GetAll().Result.Data.Where(x => x.UserId == user.Id && x.GroupId == Guid.Parse(groupId));
 
-                _voteRepository.DeleteRow(votes.ToList());
+                await _voteService.DeleteRow(votes.ToList());
 
                 await Clients.Group(groupId).SendAsync("Logout", userId);
             }
