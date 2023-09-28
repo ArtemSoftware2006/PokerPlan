@@ -142,7 +142,7 @@
     var logoutBtn = document.getElementById('logout');
     let usersInGroup = []
     let userCards = document.querySelectorAll(".card--container");
-
+    
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
@@ -180,6 +180,7 @@
         });
         window.location.href = "/Group/CreateGroup";
     })
+
 
     hubConnection.on("StartNewVoting", function() {
         messageNotConsent.classList.add("d-none");
@@ -274,6 +275,13 @@
         window.location.href = '/Error/GroupClosed';
     });
 
+     window.onbeforeunload = function() {
+         hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
     hubConnection.start()
         .then(function () {
             hubConnection.invoke("JoinGroupFromLink", groupId)
@@ -289,7 +297,8 @@
 
     clipboard.on('success', function(e) {
         e.clearSelection();
-         var copyBtn = document.getElementById("copyBtn");
+
+        var copyBtn = document.getElementById("copyBtn");
         copyBtn.classList.add("btn--blue--clicked")
         copyBtn.textContent = "Скопированно"
     });
