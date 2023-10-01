@@ -1,10 +1,12 @@
 @using Новая_папка.Components
 
 @model GroupModel
+
 @{
     ViewData["Title"] = "Группа";
-}
-@{
+
+    int role = Convert.ToInt32(Model.Role);
+
     string guidValue = Model.Id.ToString();
     string[] cardValues = new string[] {"0","1","2","3","5","7","10","?"};
 }
@@ -106,7 +108,7 @@
 
     let usersInGroup = []
 
-    let currentUsername = {name : "", id : "0", spectator : 1}
+    let CurrentUser = {name : "", id : "0", spectator : 1, role : 1}
 
 
     let stopBtn = document.getElementById("stopBtn")
@@ -135,15 +137,16 @@
 
 
 
-    currentNameMainField.textContent = currentUsername.name
+    currentNameMainField.textContent = CurrentUser.name
 
 
+    //Создание событий обработки клика на карточки голосов
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
             if(cardDiv.classList.contains('card--vote--active')) {
                 cardDiv.classList.remove('card--vote--active');
 
-                hubConnection.invoke("DeleteVote", groupId, currentUsername.id.toString())
+                hubConnection.invoke("DeleteVote", groupId, CurrentUser.id.toString())
                 .catch(function (err) {
                     return console.error(err.toString());
                 });
@@ -155,7 +158,7 @@
                 cardDiv.classList.add('card--vote--active');
 
                 
-                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
+                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : CurrentUser.name})
                 .catch(function (err) {
                     return console.error(err.toString());
                 });
@@ -168,7 +171,7 @@
 
     isSpectatorFieldMain.addEventListener("change", function () {
         if(isSpectatorFieldMain.checked) {
-            currentUsername.spectator = 0
+            CurrentUser.spectator = 0
 
             for(let j = 0; j < userCards.length; j++) {
 
@@ -185,7 +188,7 @@
             }
 
         } else {
-            currentUsername.spectator = 1
+            CurrentUser.spectator = 1
 
             for(let j = 0; j < userCards.length; j++) {
                 if(userCards[j].childElementCount === 2) {
@@ -199,7 +202,7 @@
             });
         }
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.spectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -241,7 +244,7 @@
     chooseNameBtn.addEventListener("click", function () {
         let newUsername = newUsernameField.value
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.spectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -254,17 +257,18 @@
         let newUsername = usernameField.value
 
         if (isSpectatorField.checked )
-            currentUsername.spectator = 0
+            CurrentUser.spectator = 0
         else 
-            currentUsername.spectator = 1
+            CurrentUser.spectator = 1
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.spectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
 
         $('#staticChooseNameAndSeparator').modal('toggle');
     });
+
 
     var clipboard = new ClipboardJS('#copyBtn');
 
@@ -276,11 +280,18 @@
         copyBtn.textContent = "Скопированно"
     });
 
+
     window.onbeforeunload = function() {
-        hubConnection.invoke("CloseGroup", groupId)
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
+        if(CurrentUser.role == Roles.Admin)
+            hubConnection.invoke("CloseGroup", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+        else 
+            hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
     }
     window.addEventListener('load', function() {
         $('#staticChooseNameAndSeparator').modal('show');
@@ -295,13 +306,17 @@
     hubConnection.on("FinishVoting", function(usersVote, average, consent) {
         isFullConsent = consent
 
-        if(isFullConsent)
-            newVotingBtn.classList.remove("d-none")
-        else
-        {
-            messageNotConsent.classList.remove("d-none")
-            againVotingBtn.classList.remove("d-none")
+        if(CurrentUser.role == Roles.Admin) {
+            if(isFullConsent)
+                newVotingBtn.classList.remove("d-none")
+            else
+                againVotingBtn.classList.remove("d-none")
+
+            stopBtn.classList.add("d-none")
         }
+
+        if(!isFullConsent)
+            messageNotConsent.classList.remove("d-none")
 
         cardsVoting.forEach(function(card) {
             card.classList.add("d-none");
@@ -309,9 +324,6 @@
 
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
-
-        stopBtn.classList.add("d-none")
-
         
         userCards.forEach(function(userCard) {
             if(userCard.children[1].textContent != "") {
@@ -326,12 +338,15 @@
 
         messageNotConsent.classList.add("d-none")
 
-        if(isFullConsent) 
-            newVotingBtn.classList.add("d-none")
-        else
-            againVotingBtn.classList.add("d-none")
+        if(CurrentUser.role == Roles.Admin) {
+            stopBtn.classList.remove("d-none")
 
-        stopBtn.classList.remove("d-none")
+            if(isFullConsent)
+                newVotingBtn.classList.add("d-none")
+            else
+                againVotingBtn.classList.add("d-none")
+        }
+
         averageDiv.classList.add("d-none")
 
 
@@ -370,9 +385,9 @@
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
 
-        if(userId == currentUsername.id) {
+        if(userId == CurrentUser.id) {
             currentNameMainField.textContent = newUsername
-            currentUsername.name = newUsername;
+            CurrentUser.name = newUsername;
             usernameDropdown.textContent = newUsername
             usernameDropdownItem.textContent = newUsername
         }
@@ -387,13 +402,13 @@
 
     hubConnection.on("UserAdded", function(users, statusGroup) {
 
-        if(currentUsername.name === "") {
-            currentUsername = users[users.length - 1]
-            document.getElementById("CurrentName").textContent = currentUsername.name ;
+        if(CurrentUser.name === "") {
+            CurrentUser = users[users.length - 1]
+            document.getElementById("CurrentName").textContent = CurrentUser.name ;
 
-            usernameField.value = currentUsername.name
+            usernameField.value = CurrentUser.name
 
-            usernameDropdownItem.textContent = currentUsername.name
+            usernameDropdownItem.textContent = CurrentUser.name
         }   
 
         for(let i = 0; i < users.length; i++) {
@@ -418,13 +433,29 @@
 
     hubConnection.start()
         .then(function () {
-            hubConnection.invoke("CreateGroup", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-        })
+            if(@role == Roles.Admin)
+                hubConnection.invoke("CreateGroup", groupId)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                })
+            else {
+                hubConnection.invoke("JoinGroupFromLink", groupId)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+                stopBtn.classList.add("d-none")
+            }
+        }) 
         .catch(function (err) {
             return console.error(err.toString());
-        });
+        })  
+        
+
+
+const Roles = {
+    Admin: 0,
+    User: 1
+}
     
 </script>

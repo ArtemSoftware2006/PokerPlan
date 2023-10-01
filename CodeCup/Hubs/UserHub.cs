@@ -27,6 +27,7 @@ namespace CodeCup.Hubs
        
         public async Task CreateGroup(string groupId)
         {
+            //TODO Вынести логику создания комнаты в сервис
             var response = await _userService.CreateAsync(new UserVm() {
                 Name = NAME_ADMIN,
                 Role = Role.Admin,
@@ -35,18 +36,19 @@ namespace CodeCup.Hubs
 
             if (response.Status == Status.Ok)
             {
-                 await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
 
+                // TODO UserModel должен возращать метод CreatAsync (_userService.CreateAsync)
                 UserModel userVm = new UserModel() 
                 {
                     Name = NAME_ADMIN,
-                    Id = response.Data.Id
+                    Id = response.Data.Id,
+                    Role = response.Data.Role
                 };
 
                 await Clients.Group(groupId).SendAsync("UserAdded", new List<UserModel>() {userVm});   
             }
         }
-
         public async Task JoinGroupFromLink(string id)
         {
             var responseGroup = await _groupService.GetAsync(id);
@@ -57,8 +59,11 @@ namespace CodeCup.Hubs
 
                 if (responseUser.Status == Status.Ok)
                 {
+                    // TODO вся логику добавления имени должна быть вынесена на уровень сервисов
+                    // TODO возможно для логики создания имени нужен отдельный класс
                     var userNames = responseUser.Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
                     var group = responseGroup.Data;
+
                     
                     var maybeNames = names.Except(userNames).ToList();
 
@@ -72,7 +77,11 @@ namespace CodeCup.Hubs
 
                     await _userService.CreateAsync(user);
 
-                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => new UserModel() {Name = x.Name, Id = x.Id}).ToList();
+                    //TODO Нужно возращать не всех пользователей, а только одного.
+
+                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => 
+                        new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role})
+                        .ToList();
 
                     if (group?.Status != StatusEntity.Closed)
                     {
@@ -83,13 +92,14 @@ namespace CodeCup.Hubs
             }
             
         }
-
         public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator) 
         {
+            //TODO возможно требуется разделить логику изменения имени и логику изменения isSpectator
             var userResponse = await _userService.GetAsync(int.Parse(userId));
 
             if (userResponse.Status == Status.Ok)
             {
+                //TODO изменение статуса isSpectator должно быть на уровне сервисов
                 var user = userResponse.Data;
 
                 user.Name = username;
@@ -99,9 +109,7 @@ namespace CodeCup.Hubs
                     var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId));
 
                     await _voteService.DeleteRow(votes.ToList());
-                }
-                    
-                
+                }  
 
                 await _userService.UpdateAsync(user);
 
@@ -114,6 +122,8 @@ namespace CodeCup.Hubs
         public async Task DeleteVote(string groupId, string userId)
         {
             _logger.LogInformation("User: {0} deleted vote", userId);
+
+            //TODO удаление голоса по id пользователя в среисе
 
             Vote vote = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId)).FirstOrDefault();
 
@@ -142,6 +152,8 @@ namespace CodeCup.Hubs
 
                 _logger.LogInformation("User: {0} voted : {1}", user.Name, model.Value);
 
+                //TODO Создание Vote в сервисе
+
                 var vote = new Vote() {
                     DateCreated = DateTime.Now,
                     GroupId = group.Id,
@@ -153,8 +165,9 @@ namespace CodeCup.Hubs
             }
 
         }
-
         public async Task FinishVoting(string groupId)
+
+        //TODO Рассчет среднего значения должен выполнять отдельный сервис
         {
             float sumValues = 0;
             int countVotind = 0;
@@ -200,6 +213,7 @@ namespace CodeCup.Hubs
         }
         public async Task StartNewVoting(string groupId) 
         {
+            //TODO Не удалять старые голоса, а менять их статус на неактивные
             var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId));
 
             var responseGroup = await _groupService.GetAsync(groupId);
@@ -226,6 +240,7 @@ namespace CodeCup.Hubs
 
             if (responseGroup.Status == Status.Ok)
             {
+                //TODO Закрывать группу в сервисе
                 var group = responseGroup.Data;
                 
                 group.Status = StatusEntity.Closed;
@@ -242,6 +257,7 @@ namespace CodeCup.Hubs
 
             if (response.Status == Status.Ok)
             {
+                //TODO Logout реализовать в сервисе
                 User user = response.Data;
 
                 await _userService.DeleteAsync(user);
