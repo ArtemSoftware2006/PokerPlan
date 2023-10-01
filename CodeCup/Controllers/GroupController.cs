@@ -84,6 +84,16 @@ namespace Новая_папка.Controllers
             
         }
 
+        public IActionResult ModalLink(string link)
+        {
+            return View(link);
+        }
+
+        public IActionResult ModalChooseNameAndSpectator(ChooseNameAndSpectatorModel model)
+        {
+            return View(model);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -123,30 +123,23 @@
         <div class="card--vote m-1">Кофе</div>
     </div>
 
-     @await Html.PartialAsync("ModalLink", Model.Link)
-
-    
-
-    <div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content ">
-
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="d-flex justify-content-start flex-column modal-body">
-
-                    <label class="m-2 p-1">Введите новое имя</label>
-                    <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
-
-                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
-
-                </div>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("ModalLink", Model.Link)
+    @await Html.PartialAsync("ModalChooseNameAndSpectator", 
+        new ChooseNameAndSpectatorModel() 
+            {
+                Id="staticChooseNameAndSeparator",
+                IdBtn="chooseNameAndSpectatorBtn",
+                ChooseName = true,
+                ChooseSpectator = true
+            })
+    @await Html.PartialAsync("ModalChooseNameAndSpectator", 
+        new ChooseNameAndSpectatorModel() 
+        {
+            Id="staticChooseName",
+            IdBtn="chooseNameBtn",
+            ChooseName = true, 
+            ChooseSpectator = false
+        })
 
  </div>
 

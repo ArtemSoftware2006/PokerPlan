@@ -122,7 +122,7 @@ namespace CodeCup.Hubs
                 await _voteService.DeleteAsync(vote);
             }
         }
-        public async Task SetVote(CreateVoteVm model)
+        public async Task SetVote(CreateVoteModel model)
         {
             var responseGroup = await _groupService.GetAsync(model.GroupId);
 
