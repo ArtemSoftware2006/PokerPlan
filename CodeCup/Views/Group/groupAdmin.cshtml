@@ -148,36 +148,48 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
 
-    let groupId = '@Html.Raw(guidValue)';
     let isVotingStopped = false;
-    let usersInGroup = []
-    let value = 0;
     let isFullConsent = false;
-    let average = 0;
-    let currentUsername = {name : "", id : "0", spectator : 1}
     let isVoting = true;
+
+    let value = 0;
+    let average = 0;
+
+    let groupId = '@Html.Raw(guidValue)';
+
+    let usersInGroup = []
+
+    let currentUsername = {name : "", id : "0", spectator : 1}
+
 
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
     let againVotingBtn = document.getElementById("againVotingBtn")
-    var cardDivs = document.querySelectorAll('.card--vote');
-    let messageNotConsent = document.querySelector('.message--no--consent');
-    var averageDiv = document.getElementById('average');
-    let userCards = document.querySelectorAll(".card--container");
-    let cardsVoting = document.querySelectorAll(".card--vote");
     let modalCloseBtn = document.getElementById("modalCLoseBtn")
-    let usernameField = document.getElementById('nameField')
     let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
+    let historyBtn = document.getElementById("history")
+    let logoutBtn = document.getElementById('logout')
+
+    let usernameField = document.getElementById('nameField')
     let isSpectatorField = document.getElementById('isSpectatorField')
     let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
-    let usernameDropdown = document.getElementById('usernameDropdownItem')
-    let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
     let currentNameMainField = document.getElementById("CurrentName")
-    let historyBtn = document.getElementById("history")
+
+    let messageNotConsent = document.querySelector('.message--no--consent');
+
+    let averageDiv = document.getElementById('average');
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
+
+    let userCards = document.querySelectorAll(".card--container");
+    let cardsVoting = document.querySelectorAll(".card--vote");
+    let cardDivs = document.querySelectorAll('.card--vote');
+
+
 
     currentNameMainField.textContent = currentUsername.name
+
 
     cardDivs.forEach(function(cardDiv) {
         cardDiv.addEventListener('click', function() {
@@ -207,10 +219,132 @@
     });
 
 
+    isSpectatorFieldMain.addEventListener("change", function () {
+        if(isSpectatorFieldMain.checked) {
+            currentUsername.spectator = 0
+
+            for(let j = 0; j < userCards.length; j++) {
+
+                userCards[j].children[0].classList.remove("card--add--user");
+
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.add("card--add--user--shower");
+                }
+
+                cardsVoting.forEach(function(card) {
+                    card.classList.add("d-none");
+                });
+
+            }
+
+        } else {
+            currentUsername.spectator = 1
+
+            for(let j = 0; j < userCards.length; j++) {
+                if(userCards[j].childElementCount === 2) {
+                    userCards[j].children[0].classList.remove("card--add--user--shower");
+                    userCards[j].children[0].classList.add("card--add--user");
+                }
+            }
+
+            cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });
+        }
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    })
+
+    usernameDropdownItem.addEventListener("click", function () {
+        $('#staticChooseName').modal("show")
+    })
+
+    logoutBtn.addEventListener("click", function () {
+        hubConnection.invoke("Logout", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+    });
+
+    newVotingBtn.addEventListener("click", function () {
+        hubConnection.invoke("StartNewVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    });
+
+    againVotingBtn.addEventListener("click", function () {
+        hubConnection.invoke("StartNewVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    });
+
+    stopBtn.addEventListener("click", function () {
+        hubConnection.invoke("FinishVoting", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    });
+
+    chooseNameBtn.addEventListener("click", function () {
+        let newUsername = newUsernameField.value
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#chooseNameModal').modal('toggle');
+    });
+
+    chooseNameAndSpectatorBtn.addEventListener("click", function () {
+
+        let newUsername = usernameField.value
+
+        if (isSpectatorField.checked )
+            currentUsername.spectator = 0
+        else 
+            currentUsername.spectator = 1
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $('#staticChooseNameAndSeparator').modal('toggle');
+    });
+
+    var clipboard = new ClipboardJS('#copyBtn');
+
+    clipboard.on('success', function(e) {
+        e.clearSelection();
+
+        var copyBtn = document.getElementById("copyBtn");
+        copyBtn.classList.add("btn--blue--clicked")
+        copyBtn.textContent = "Скопированно"
+    });
+
+    window.onbeforeunload = function() {
+        hubConnection.invoke("CloseGroup", groupId)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+    window.addEventListener('load', function() {
+        $('#staticChooseNameAndSeparator').modal('show');
+    });
+
+
+
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5010/user")
         .build();
-    
+
     hubConnection.on("FinishVoting", function(usersVote, average, consent) {
         isFullConsent = consent
 
@@ -335,116 +469,6 @@
         }
     });
 
-    document.getElementById("logout").addEventListener("click", function () {
-        hubConnection.invoke("Logout", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-
-    });
-
-    isSpectatorFieldMain.addEventListener("change", function () {
-        if(isSpectatorFieldMain.checked) {
-            currentUsername.spectator = 0
-
-            for(let j = 0; j < userCards.length; j++) {
-
-                userCards[j].children[0].classList.remove("card--add--user");
-
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.add("card--add--user--shower");
-                }
-
-                cardsVoting.forEach(function(card) {
-                    card.classList.add("d-none");
-                });
-
-            }
-
-        } else {
-            currentUsername.spectator = 1
-
-            for(let j = 0; j < userCards.length; j++) {
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.remove("card--add--user--shower");
-                    userCards[j].children[0].classList.add("card--add--user");
-                }
-            }
-
-            cardsVoting.forEach(function(card) {
-                card.classList.remove("d-none");
-            });
-        }
-
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-    })
-
-    usernameDropdownItem.addEventListener("click", function () {
-        $('#staticChooseName').modal("show")
-    })
-
-    newVotingBtn.addEventListener("click", function () {
-        hubConnection.invoke("StartNewVoting", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-    });
-
-    againVotingBtn.addEventListener("click", function () {
-        hubConnection.invoke("StartNewVoting", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-    });
-
-    stopBtn.addEventListener("click", function () {
-        hubConnection.invoke("FinishVoting", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-    });
-
-    chooseNameBtn.addEventListener("click", function () {
-        let newUsername = newUsernameField.value
-
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-
-        $('#chooseNameModal').modal('toggle');
-    });
-
-    chooseNameAndSpectatorBtn.addEventListener("click", function () {
-
-        let newUsername = usernameField.value
-
-        if (isSpectatorField.checked )
-            currentUsername.spectator = 0
-        else 
-            currentUsername.spectator = 1
-
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-
-        $('#staticChooseNameAndSeparator').modal('toggle');
-    });
-
-    window.onbeforeunload = function() {
-        hubConnection.invoke("CloseGroup", groupId)
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
-    }
-    window.addEventListener('load', function() {
-        $('#staticChooseNameAndSeparator').modal('show');
-    });
-
     hubConnection.start()
         .then(function () {
             hubConnection.invoke("CreateGroup", groupId)
@@ -455,19 +479,5 @@
         .catch(function (err) {
             return console.error(err.toString());
         });
-
-
-
-    var clipboard = new ClipboardJS('#copyBtn');
-
-    clipboard.on('success', function(e) {
-        e.clearSelection();
-
-        var copyBtn = document.getElementById("copyBtn");
-        copyBtn.classList.add("btn--blue--clicked")
-        copyBtn.textContent = "Скопированно"
-    });
-
-
     
 </script>
