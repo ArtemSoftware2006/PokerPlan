@@ -50,6 +50,7 @@ namespace Новая_папка.Controllers
         [HttpGet("{group}")]
         public async Task<IActionResult> Join(string group)
         {
+            //TODO Реализовать Join в слое сервисов (или проверку на возможность присоединения к группе)
             try
             {
                 var response = await _groupService.GetAsync(group);

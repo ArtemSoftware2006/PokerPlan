@@ -4,6 +4,7 @@ using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.Extensions.Logging;
+using Service.Helpers;
 using Service.Interfaces;
 
 namespace Service.Impl
@@ -12,12 +13,15 @@ namespace Service.Impl
     {
         //TODO Убрать костыль с выбором имен
         private List<string> names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
+        private UniqueNameGenerator uniqueNameGenerator;
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
         public UserService(IUserRepository userRepository, ILogger<UserService> logger)
         {
             _logger = logger;
             _userRepository = userRepository;
+
+            uniqueNameGenerator = new UniqueNameGenerator();
         }
         public async Task<BaseResponse<UserVm>> CreateAsync(string groupId, Role role)
         {
@@ -25,8 +29,7 @@ namespace Service.Impl
             {
                 var user = new User() 
                 {
-                    //TODO Убрать костыль с выбором имен
-                    Name = names[new Random().Next(0, names.Count)],
+                    Name = GenerateNewName(groupId),
                     GroupId = Guid.Parse(groupId),
                     Role = role,
                     DateCreated = DateTime.Now,
@@ -50,11 +53,7 @@ namespace Service.Impl
                     };
                 }
 
-                _logger.LogError("User don`t saved (id = {0}), name = {1})", user.Id, user.Name);
-
-                return new BaseResponse<UserVm> {
-                    Status = Status.Error,
-                };
+                throw new Exception("User don`t saved");
             }
             catch (Exception ex)
             {
@@ -65,6 +64,14 @@ namespace Service.Impl
                     Status = Status.Error,
                 };
             }
+        }
+        private string GenerateNewName(string groupId) {
+            var usernamesInGroup = _userRepository.GetAllAsync()
+                                .Where(x => x.GroupId == Guid.Parse(groupId))
+                                .Select(x => x.Name)
+                                .ToList(); 
+                            
+            return uniqueNameGenerator.GenerateNewName(usernamesInGroup);
         }
 
         public async Task<BaseResponse<bool>> DeleteAsync(User model)

@@ -37,7 +37,6 @@ namespace CodeCup.Hubs
 
             if (responseGroup.Status == Status.Ok)
             {
-                // TODO возможно для логики создания имени нужен отдельный класс
                 var group = responseGroup.Data;
                 
                 _logger.LogInformation("User: joined group {1}", groupId);
