@@ -1,4 +1,3 @@
-using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.SignalR;
@@ -46,7 +45,7 @@ namespace CodeCup.Hubs
                 await _userService.CreateAsync(groupId, Role.User);
 
                 var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => 
-                        new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role, isSpectator = Spectator.User })
+                        new UserVm() {Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = Spectator.User })
                         .ToList();
 
                 if (group.Status != StatusEntity.Closed)
@@ -191,7 +190,7 @@ namespace CodeCup.Hubs
             if (response.Status == Status.Ok)
             {
                 await _voteService.DeleteByUserIdAsync(int.Parse(userId));
-                
+
                 await Clients.Group(groupId).SendAsync("Logout", userId);
             }
         }
