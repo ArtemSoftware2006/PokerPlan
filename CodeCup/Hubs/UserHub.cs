@@ -119,42 +119,34 @@ namespace CodeCup.Hubs
             bool isFullConsent = false;
             double average = 0;
 
-            var responseGroup = await _groupService.GetAsync(groupId);
+            var responseGroup = await _groupService.CloseGroupAsync(groupId);
 
             if (responseGroup.Status == Status.Ok)
             {
-                var group = responseGroup.Data;
-
                 var usersInGroup = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId));
 
                 var usersVotes = _voteService.FinishVoting(groupId, usersInGroup.ToList()).Result.Data;
 
-                group.Status = StatusEntity.Stopped;
-                
-                var responseUpdate = await _groupService.UpdateAsync(group);
-
-                if (responseUpdate.Status == Status.Ok)
+                foreach (UserVoteVm item in usersVotes)
                 {
-                    foreach (UserVoteVm item in usersVotes)
+                    if (!(item.Value == "?" || item.Value == "Кофе"))
                     {
-                        if (!(item.Value == "?" || item.Value == "Кофе"))
-                        {
-                            sumValues += float.Parse(item.Value);
-                            countVotind++;
-                        }
+                        sumValues += float.Parse(item.Value);
+                        countVotind++;
                     }
-
-                    if (countVotind != 0)
-                    {
-                        isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
-
-                        average = Math.Round(sumValues / countVotind,1);
-                    }
-                    else    
-                        average = 0;
-                    
-                    await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);      
                 }
+
+                if (countVotind != 0)
+                {
+                    isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
+
+                    average = Math.Round(sumValues / countVotind,1);
+                }
+                else    
+                    average = 0;
+                
+                await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);      
+                
             }
         }
         public async Task StartNewVoting(string groupId) 

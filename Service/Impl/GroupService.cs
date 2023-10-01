@@ -112,6 +112,37 @@ namespace Service.Impl
             throw  new NotImplementedException();
         }
 
+        public async Task<BaseResponse<bool>> CloseGroupAsync(string groupId)
+        {
+            try
+            {
+                var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+                if (group != null)
+                {
+                    group.Status = StatusEntity.Closed;
+
+                    bool status = await _groupRepository.UpdateAsync(group);
+
+                    return new BaseResponse<bool>() {
+                        Data = status,
+                        Status = Status.Ok
+                    };
+                }
+
+                throw new Exception("Group not found or error during activation");
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(ex.Message);
+               _logger.LogError(ex.StackTrace);
+
+               return new BaseResponse<bool>() {
+                    Status = Status.Error,
+               };
+            }
+        }
+
         public async Task<BaseResponse<Group>> UpdateAsync(Group group)
         {
             try
