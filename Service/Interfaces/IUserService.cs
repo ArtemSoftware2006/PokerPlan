@@ -12,5 +12,6 @@ namespace Service.Interfaces
         public Task<BaseResponse<bool>> DeleteAsync(User model);  
         public Task<BaseResponse<bool>> UpdateAsync(User model);  
         public BaseResponse<List<User>> GetAll();  
+
     }
 }

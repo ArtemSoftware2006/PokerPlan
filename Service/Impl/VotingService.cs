@@ -3,7 +3,6 @@ using Domain;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Service.Interfaces;
 
@@ -61,6 +60,33 @@ namespace Service.Impl
                     };
                 return new BaseResponse<bool>() {
                     Status = Status.Error
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<bool> {
+                    Status = Status.Error
+                };
+            }
+        }
+
+        public async Task<BaseResponse<bool>> DeleteByUserIdAsync(int id)
+        {
+            try
+            {
+                var vote = _voteRepository.GetAllAsync().Where(x => x.UserId == id).FirstOrDefault();
+
+                if (vote != null)
+                     await _voteRepository.DeleteAsync(vote);
+                else
+                    throw new Exception("Vote not found");
+
+                return new BaseResponse<bool>() {
+                    Status = Status.Ok,
+                    Data = true
                 };
             }
             catch (Exception ex)

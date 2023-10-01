@@ -9,6 +9,7 @@ namespace Service.Interfaces
         public Task<BaseResponse<List<UserVoteVm>>> FinishVoting(string groupId, List<User> users); 
         public Task<BaseResponse<bool>> CreateAsync(Vote model); 
         public Task<BaseResponse<bool>> DeleteAsync(Vote model); 
+        public Task<BaseResponse<bool>> DeleteByUserIdAsync(int id); 
         public Task<BaseResponse<bool>> DeleteRow(List<Vote> model); 
         public Task<BaseResponse<List<Vote>>> GetAll(); 
     }

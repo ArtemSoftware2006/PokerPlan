@@ -148,7 +148,7 @@
             if(cardDiv.classList.contains('card--vote--active')) {
                 cardDiv.classList.remove('card--vote--active');
 
-                hubConnection.invoke("DeleteVote", groupId, CurrentUser.id.toString())
+                hubConnection.invoke("DeleteVote", CurrentUser.id.toString())
                 .catch(function (err) {
                     return console.error(err.toString());
                 });

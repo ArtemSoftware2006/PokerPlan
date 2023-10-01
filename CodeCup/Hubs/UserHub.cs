@@ -63,16 +63,18 @@ namespace CodeCup.Hubs
             //TODO возможно требуется разделить логику изменения имени и логику изменения isSpectator
 
             Console.WriteLine("User: {0} changed name to {1}", userId, username);
+
             var userResponse = await _userService.GetAsync(int.Parse(userId));
 
             if (userResponse.Status == Status.Ok)
             {
-                //TODO изменение статуса isSpectator должно быть на уровне сервисов
+                //TODO изменение статуса isSpectator должно быть на уровне сервисов (не уверен, зачем тогда метод Update)
                 var user = userResponse.Data;
 
                 user.Name = username;
                 user.IsSpectator = (Spectator)int.Parse(isSpectator);
 
+                // TODO не удалять votes, а менять их статус на неактивный
                 if(user.IsSpectator == Spectator.Spectator)  {
                     var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId));
 
@@ -87,18 +89,11 @@ namespace CodeCup.Hubs
                 await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);      
             }
         }
-        public async Task DeleteVote(string groupId, string userId)
+        public async Task DeleteVote(string userId)
         {
             _logger.LogInformation("User: {0} deleted vote", userId);
 
-            //TODO удаление голоса по id пользователя в среисе
-
-            Vote vote = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId)).FirstOrDefault();
-
-            if (vote != null)
-            {
-                await _voteService.DeleteAsync(vote);
-            }
+            await _voteService.DeleteByUserIdAsync(int.Parse(userId));   
         }
         public async Task SetVote(CreateVoteModel model)
         {
