@@ -94,6 +94,11 @@ namespace Новая_папка.Controllers
             return View(model);
         }
 
+        public IActionResult Header(string username)
+        {
+            return View(username);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
