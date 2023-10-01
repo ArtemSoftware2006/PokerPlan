@@ -10,8 +10,7 @@ namespace Service.Impl
 {
     public class UserService : IUserService
     {
-        //TODO Убрать костыль
-        private int countUsedNames = 0;
+        //TODO Убрать костыль с выбором имен
         private List<string> names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
@@ -20,20 +19,19 @@ namespace Service.Impl
             _logger = logger;
             _userRepository = userRepository;
         }
-        public async Task<BaseResponse<User>> CreateAsync(string groupId, Role role)
+        public async Task<BaseResponse<UserVm>> CreateAsync(string groupId, Role role)
         {
             try
             {
                 var user = new User() 
                 {
-                    Name = names[countUsedNames],
+                    //TODO Убрать костыль с выбором имен
+                    Name = names[new Random().Next(0, names.Count)],
                     GroupId = Guid.Parse(groupId),
                     Role = role,
                     DateCreated = DateTime.Now,
                     IsSpectator = Spectator.User
                 };
-
-                countUsedNames++;
 
                 bool status = await _userRepository.CreateAsync(user);
 
@@ -41,15 +39,20 @@ namespace Service.Impl
                 {
                     _logger.LogInformation("Add user witf id = {0}, name = {1}", user.Id, user.Name);
 
-                    return new BaseResponse<User> {
+                    return new BaseResponse<UserVm> {
                         Status = Status.Ok,
-                        Data = user
+                        Data = new UserVm() {
+                            Name = user.Name,
+                            Role = user.Role,
+                            IsSpectator = user.IsSpectator,
+                            Id = user.Id
+                        }
                     };
                 }
 
                 _logger.LogError("User don`t saved (id = {0}), name = {1})", user.Id, user.Name);
 
-                return new BaseResponse<User> {
+                return new BaseResponse<UserVm> {
                     Status = Status.Error,
                 };
             }
@@ -58,7 +61,7 @@ namespace Service.Impl
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<User> {
+                return new BaseResponse<UserVm> {
                     Status = Status.Error,
                 };
             }

@@ -9,16 +9,12 @@ namespace CodeCup.Hubs
 {
     public class UserHub: Hub
     {
-        const string NAME_ADMIN = "Администратор";
         private readonly ILogger<UserHub> _logger;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
         private readonly IVotingService _voteService;
-        private List<string> names;
         public UserHub(ILogger<UserHub> logger, IGroupService groupService, IUserService userService, IVotingService voteService)
         {
-            names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
-
             _voteService = voteService;
             _userService = userService;
             _groupService = groupService;
@@ -31,18 +27,9 @@ namespace CodeCup.Hubs
 
             if (response.Status == Status.Ok)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupId);            
 
-                // TODO UserModel должен возращать метод CreatAsync (_userService.CreateAsync)
-                UserModel userVm = new UserModel() 
-                {
-                    Name = NAME_ADMIN,
-                    Id = response.Data.Id,
-                    Role = response.Data.Role,
-                    isSpectator = Spectator.User
-                };
-
-                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserModel>() {userVm});   
+                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {response.Data});   
             }
         }
         public async Task JoinGroupFromLink(string groupId)
@@ -55,14 +42,10 @@ namespace CodeCup.Hubs
 
                 if (responseUser.Status == Status.Ok)
                 {
-                    // TODO вся логику добавления имени должна быть вынесена на уровень сервисов
                     // TODO возможно для логики создания имени нужен отдельный класс
-                    var userNames = responseUser.Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => x.Name).ToList();
                     var group = responseGroup.Data;
                     
-                    var maybeNames = names.Except(userNames).ToList();
-
-                    _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], groupId);
+                    _logger.LogInformation("User: joined group {1}", groupId);
                     
 
                     await _userService.CreateAsync(groupId, Role.User);
