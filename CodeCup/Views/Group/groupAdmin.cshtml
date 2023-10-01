@@ -406,8 +406,7 @@
     });
 
     hubConnection.on("UserAdded", function(users, statusGroup) {
-
-        if(CurrentUser.name === "") {
+         if(CurrentUser.name === "") {
             CurrentUser = users[users.length - 1]
             document.getElementById("CurrentName").textContent = CurrentUser.name ;
 
@@ -438,6 +437,7 @@
 
     hubConnection.start()
         .then(function () {
+
             if(@role == Roles.Admin)
                 hubConnection.invoke("CreateGroup", groupId)
                 .catch(function (err) {

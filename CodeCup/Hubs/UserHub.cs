@@ -29,7 +29,7 @@ namespace CodeCup.Hubs
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, groupId);            
 
-                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {response.Data});   
+                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {response.Data}, StatusEntity.Active);   
             }
         }
         public async Task JoinGroupFromLink(string groupId)
@@ -38,30 +38,23 @@ namespace CodeCup.Hubs
 
             if (responseGroup.Status == Status.Ok)
             {
-                var responseUser = _userService.GetAll();
+                // TODO возможно для логики создания имени нужен отдельный класс
+                var group = responseGroup.Data;
+                
+                _logger.LogInformation("User: joined group {1}", groupId);
 
-                if (responseUser.Status == Status.Ok)
-                {
-                    // TODO возможно для логики создания имени нужен отдельный класс
-                    var group = responseGroup.Data;
-                    
-                    _logger.LogInformation("User: joined group {1}", groupId);
-                    
+                await _userService.CreateAsync(groupId, Role.User);
 
-                    await _userService.CreateAsync(groupId, Role.User);
-
-                    //TODO Нужно возращать не всех пользователей, а только одного.
-
-                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => 
+                var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => 
                         new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role, isSpectator = Spectator.User })
                         .ToList();
 
-                    if (group?.Status != StatusEntity.Closed)
-                    {
-                        await Groups.AddToGroupAsync(Context.ConnectionId, group.Id.ToString());
-                        await Clients.Group(group.Id.ToString()).SendAsync("UserAdded", users, group.Status);
-                    }   
-                }
+                if (group?.Status != StatusEntity.Closed)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
+                    await Clients.Group(groupId).SendAsync("UserAdded", users, group.Status);
+                }   
+                
             }
             
         }

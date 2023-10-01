@@ -38,7 +38,14 @@ namespace Новая_папка.Controllers
                 Id = groupId, Name = name
             });
 
-            return View("groupAdmin", new GroupModel() {Name = name, Link = link, Id=groupId.ToString(), Role = Role.Admin});
+            return View("groupAdmin", 
+            new GroupModel() 
+            {
+                Name = name, 
+                Link = link, 
+                Id=groupId.ToString(),
+                Role = Role.Admin,
+            });
         }
         [HttpGet("{group}")]
         public async Task<IActionResult> Join(string group)
@@ -67,7 +74,14 @@ namespace Новая_папка.Controllers
                         if (response.Data != null && response.Data.Status != StatusEntity.Closed)
                         {
                             //TODO В GroupMidel должна быть добавлена роль пользователя
-                            return View("groupAdmin", new GroupModel() {Name = response.Data.Name, Id = group, Link = link, Role = Role.User});
+                            return View("groupAdmin", 
+                                new GroupModel() 
+                                {
+                                    Name = response.Data.Name, 
+                                    Id = group, 
+                                    Link = link, 
+                                    Role = Role.User,
+                                });
                         }     
                     } 
                 }
