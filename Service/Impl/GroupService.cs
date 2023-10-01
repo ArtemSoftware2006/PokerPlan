@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using DAL.interfaces;
 using Domain;
 using Domain.Entity;
@@ -17,6 +16,37 @@ namespace Service.Impl
         {
             _logger = logger;
             _groupRepository = groupRepository;
+        }
+
+        public async Task<BaseResponse<bool>> ActivateGroupAsync(string groupId)
+        {
+            try
+            {
+                var group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+                if (group != null)
+                {
+                    group.Status = StatusEntity.Active;
+
+                    bool status = await _groupRepository.UpdateAsync(group);
+
+                    return new BaseResponse<bool>() {
+                        Data = status,
+                        Status = Status.Ok
+                    };
+                }
+
+                throw new Exception("Group not found or error during activation");
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(ex.Message);
+               _logger.LogError(ex.StackTrace);
+
+               return new BaseResponse<bool>() {
+                    Status = Status.Error,
+               };
+            }
         }
 
         public async Task<string> CreateAsync(GroupVm model)
@@ -64,17 +94,16 @@ namespace Service.Impl
                     };
                 }
 
-                return new BaseResponse<Group> {
-                    Data = null,
-                    Status = Status.Error
-                };
+                throw new Exception("Group not found");
             }
             catch (Exception ex)
             {
                _logger.LogError(ex.Message);
                _logger.LogError(ex.StackTrace);
 
-               throw;
+               return new BaseResponse<Group> {
+                    Status = Status.Error
+                };
             }
         }
 

@@ -10,5 +10,6 @@ namespace Service.Interfaces
         public Task<string> JoinAsync(UserVm groupId);
         public Task<BaseResponse<Group>> GetAsync(string groupId);
         public Task<BaseResponse<Group>> UpdateAsync(Group group);
+        public Task<BaseResponse<bool>> ActivateGroupAsync(string groupId);
     }
 }

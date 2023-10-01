@@ -130,6 +130,7 @@ namespace CodeCup.Hubs
                 var usersVotes = _voteService.FinishVoting(groupId, usersInGroup.ToList()).Result.Data;
 
                 group.Status = StatusEntity.Stopped;
+                
                 var responseUpdate = await _groupService.UpdateAsync(group);
 
                 if (responseUpdate.Status == Status.Ok)
@@ -165,11 +166,7 @@ namespace CodeCup.Hubs
 
             if (responseGroup.Status == Status.Ok)
             {
-                var group = responseGroup.Data;
-
-                group.Status = StatusEntity.Active;
-
-                var responseUpdate = await _groupService.UpdateAsync(group);
+                var responseUpdate = await _groupService.ActivateGroupAsync(groupId);
 
                 if(responseUpdate.Status == Status.Ok) {
                     await _voteService.DeleteRow(votes.ToList());
