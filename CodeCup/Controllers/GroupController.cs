@@ -1,7 +1,3 @@
-using DAL;
-using DAL.Impl;
-using DAL.interfaces;
-using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
