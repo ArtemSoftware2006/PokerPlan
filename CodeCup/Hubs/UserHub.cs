@@ -49,7 +49,7 @@ namespace CodeCup.Hubs
                         new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role, isSpectator = Spectator.User })
                         .ToList();
 
-                if (group?.Status != StatusEntity.Closed)
+                if (group.Status != StatusEntity.Closed)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
                     await Clients.Group(groupId).SendAsync("UserAdded", users, group.Status);
@@ -76,9 +76,7 @@ namespace CodeCup.Hubs
 
                 // TODO не удалять votes, а менять их статус на неактивный
                 if(user.IsSpectator == Spectator.Spectator)  {
-                    var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId) && x.UserId == int.Parse(userId));
-
-                    await _voteService.DeleteRow(votes.ToList());
+                    await _voteService.DeleteByUserIdAsync(int.Parse(userId));
                 }  
 
                 await _userService.UpdateAsync(user);
@@ -151,7 +149,8 @@ namespace CodeCup.Hubs
         }
         public async Task StartNewVoting(string groupId) 
         {
-            //TODO Не удалять старые голоса, а менять их статус на неактивные
+            //TODO Не удалять старые голоса, а менять их статус на неактивные (можно и удалять, 
+            //если создать отдельный сервис для отображения истории голосов и сохранять историю на клиенте)
             var votes = _voteService.GetAll().Result.Data.Where(x => x.GroupId == Guid.Parse(groupId));
 
             var responseGroup = await _groupService.GetAsync(groupId);
@@ -192,7 +191,7 @@ namespace CodeCup.Hubs
             if (response.Status == Status.Ok)
             {
                 await _voteService.DeleteByUserIdAsync(int.Parse(userId));
-
+                
                 await Clients.Group(groupId).SendAsync("Logout", userId);
             }
         }
