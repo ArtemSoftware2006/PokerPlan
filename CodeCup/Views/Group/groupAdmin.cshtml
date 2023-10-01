@@ -78,6 +78,7 @@
             {
                 Id="staticChooseNameAndSeparator",
                 IdBtn="chooseNameAndSpectatorBtn",
+                IdField="usernameField",
                 ChooseName = true,
                 ChooseSpectator = true
             })
@@ -86,6 +87,7 @@
         {
             Id="staticChooseName",
             IdBtn="chooseNameBtn",
+            IdField="newUsernameField",
             ChooseName = true, 
             ChooseSpectator = false
         })
@@ -108,7 +110,7 @@
 
     let usersInGroup = []
 
-    let CurrentUser = {name : "", id : "0", spectator : 1, role : 1}
+    let CurrentUser = {name : "", id : "0", isSpectator : 1, role : 1}
 
 
     let stopBtn = document.getElementById("stopBtn")
@@ -120,7 +122,7 @@
     let historyBtn = document.getElementById("history")
     let logoutBtn = document.getElementById('logout')
 
-    let usernameField = document.getElementById('nameField')
+    let usernameField = document.getElementById('usernameField')
     let isSpectatorField = document.getElementById('isSpectatorField')
     let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
     let newUsernameField = document.getElementById('newUsernameField')
@@ -202,7 +204,8 @@
             });
         }
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.spectator.toString())
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -244,7 +247,9 @@
     chooseNameBtn.addEventListener("click", function () {
         let newUsername = newUsernameField.value
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.spectator.toString())
+        console.log(CurrentUser)
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -261,7 +266,7 @@
         else 
             CurrentUser.spectator = 1
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });

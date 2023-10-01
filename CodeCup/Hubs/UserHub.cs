@@ -27,12 +27,7 @@ namespace CodeCup.Hubs
        
         public async Task CreateGroup(string groupId)
         {
-            //TODO Вынести логику создания комнаты в сервис
-            var response = await _userService.CreateAsync(new UserVm() {
-                Name = NAME_ADMIN,
-                Role = Role.Admin,
-                GroupId = groupId
-            });
+            var response = await _userService.CreateAsync(groupId, Role.Admin);
 
             if (response.Status == Status.Ok)
             {
@@ -43,15 +38,16 @@ namespace CodeCup.Hubs
                 {
                     Name = NAME_ADMIN,
                     Id = response.Data.Id,
-                    Role = response.Data.Role
+                    Role = response.Data.Role,
+                    isSpectator = Spectator.User
                 };
 
                 await Clients.Group(groupId).SendAsync("UserAdded", new List<UserModel>() {userVm});   
             }
         }
-        public async Task JoinGroupFromLink(string id)
+        public async Task JoinGroupFromLink(string groupId)
         {
-            var responseGroup = await _groupService.GetAsync(id);
+            var responseGroup = await _groupService.GetAsync(groupId);
 
             if (responseGroup.Status == Status.Ok)
             {
@@ -61,26 +57,20 @@ namespace CodeCup.Hubs
                 {
                     // TODO вся логику добавления имени должна быть вынесена на уровень сервисов
                     // TODO возможно для логики создания имени нужен отдельный класс
-                    var userNames = responseUser.Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => x.Name).ToList();
+                    var userNames = responseUser.Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => x.Name).ToList();
                     var group = responseGroup.Data;
-
                     
                     var maybeNames = names.Except(userNames).ToList();
 
-                    _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], id);
+                    _logger.LogInformation("User: {0} joined group {1}", maybeNames[0], groupId);
                     
-                    var user = new UserVm() {
-                        Name = maybeNames[0],
-                        Role = Role.User,
-                        GroupId = group.Id.ToString()
-                    };
 
-                    await _userService.CreateAsync(user);
+                    await _userService.CreateAsync(groupId, Role.User);
 
                     //TODO Нужно возращать не всех пользователей, а только одного.
 
-                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(id)).Select(x => 
-                        new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role})
+                    var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => 
+                        new UserModel() {Name = x.Name, Id = x.Id, Role = x.Role, isSpectator = Spectator.User })
                         .ToList();
 
                     if (group?.Status != StatusEntity.Closed)
@@ -95,6 +85,8 @@ namespace CodeCup.Hubs
         public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator) 
         {
             //TODO возможно требуется разделить логику изменения имени и логику изменения isSpectator
+
+            Console.WriteLine("User: {0} changed name to {1}", userId, username);
             var userResponse = await _userService.GetAsync(int.Parse(userId));
 
             if (userResponse.Status == Status.Ok)

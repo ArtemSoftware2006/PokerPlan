@@ -13,7 +13,7 @@
 
                     @if(Model.ChooseName) {
                         <label class="m-2 p-1">Имя</label>
-                        <input id="nameField" type="text" class="p-1 m-2 addLink--container"/>
+                        <input id="@Model.IdField" type="text" class="p-1 m-2 addLink--container"/>
                     }
                     @if(Model.ChooseSpectator) {
                         <div class="m-2 d-flex justify-content-between">

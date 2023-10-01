@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using DAL.interfaces;
 using Domain;
 using Domain.Entity;
@@ -11,6 +10,9 @@ namespace Service.Impl
 {
     public class UserService : IUserService
     {
+        //TODO Убрать костыль
+        private int countUsedNames = 0;
+        private List<string> names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
         public UserService(IUserRepository userRepository, ILogger<UserService> logger)
@@ -18,18 +20,20 @@ namespace Service.Impl
             _logger = logger;
             _userRepository = userRepository;
         }
-        public async Task<BaseResponse<User>> CreateAsync(UserVm model)
+        public async Task<BaseResponse<User>> CreateAsync(string groupId, Role role)
         {
             try
             {
                 var user = new User() 
                 {
-                    Name = model.Name,
-                    GroupId = Guid.Parse(model.GroupId),
-                    Role = model.Role,
+                    Name = names[countUsedNames],
+                    GroupId = Guid.Parse(groupId),
+                    Role = role,
                     DateCreated = DateTime.Now,
                     IsSpectator = Spectator.User
                 };
+
+                countUsedNames++;
 
                 bool status = await _userRepository.CreateAsync(user);
 
@@ -38,7 +42,7 @@ namespace Service.Impl
                     _logger.LogInformation("Add user witf id = {0}, name = {1}", user.Id, user.Name);
 
                     return new BaseResponse<User> {
-                        Status = Domain.Enum.Status.Ok,
+                        Status = Status.Ok,
                         Data = user
                     };
                 }
@@ -46,8 +50,7 @@ namespace Service.Impl
                 _logger.LogError("User don`t saved (id = {0}), name = {1})", user.Id, user.Name);
 
                 return new BaseResponse<User> {
-                    Status = Domain.Enum.Status.Error,
-                    Data = null
+                    Status = Status.Error,
                 };
             }
             catch (Exception ex)
@@ -57,7 +60,6 @@ namespace Service.Impl
 
                 return new BaseResponse<User> {
                     Status = Status.Error,
-                    Data = null
                 };
             }
         }

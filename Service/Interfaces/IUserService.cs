@@ -1,12 +1,13 @@
 using Domain;
 using Domain.Entity;
+using Domain.Enum;
 using Domain.ViewModel;
 
 namespace Service.Interfaces
 {
     public interface IUserService
     {
-        public Task<BaseResponse<User>> CreateAsync(UserVm model);  
+        public Task<BaseResponse<User>> CreateAsync(string groupId, Role role);  
         public Task<BaseResponse<User>> GetAsync(int id);  
         public Task<BaseResponse<bool>> DeleteAsync(User model);  
         public Task<BaseResponse<bool>> UpdateAsync(User model);  
