@@ -187,17 +187,11 @@ namespace CodeCup.Hubs
         }
         public async Task Logout(string groupId, string userId) 
         {            
-            var response = await _userService.GetAsync(int.Parse(userId));
+            var response = await _userService.Logout(int.Parse(userId));
 
             if (response.Status == Status.Ok)
             {
-                //TODO Logout реализовать в сервисе
-                User user = response.Data;
-
-                await _userService.DeleteAsync(user);
-                var votes = _voteService.GetAll().Result.Data.Where(x => x.UserId == user.Id && x.GroupId == Guid.Parse(groupId));
-
-                await _voteService.DeleteRow(votes.ToList());
+                await _voteService.DeleteByUserIdAsync(int.Parse(userId));
 
                 await Clients.Group(groupId).SendAsync("Logout", userId);
             }

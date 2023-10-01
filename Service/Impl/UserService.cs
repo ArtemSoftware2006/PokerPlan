@@ -179,5 +179,37 @@ namespace Service.Impl
                 }; 
             }
         }
+
+        public async Task<BaseResponse<bool>> Logout(int userId)
+        {
+            try
+            {
+                var user = await _userRepository.GetAsync(userId);
+
+                if (user != null)
+                {
+                    bool status = await _userRepository.DeleteAsync(user);
+
+                    if (status)
+                    return new BaseResponse<bool>() {
+                        Data = true,
+                        Status = Status.Ok
+                    };
+                }
+                
+                throw new Exception("User don`t logout");
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<bool>() {
+                    Data = false,
+                    Status = Status.Error
+                }; 
+            }
+        }
     }
 }
