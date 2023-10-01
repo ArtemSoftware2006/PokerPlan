@@ -95,38 +95,20 @@ namespace CodeCup.Hubs
 
             await _voteService.DeleteByUserIdAsync(int.Parse(userId));   
         }
-        public async Task SetVote(CreateVoteModel model)
+        public async Task SetVote(VoteVm model)
         {
-            var responseGroup = await _groupService.GetAsync(model.GroupId);
+            var oldVote = _voteService.GetAll().Result.Data
+                .Where(x => x.GroupId == Guid.Parse(model.GroupId) && x.UserId == model.UserId)
+                .FirstOrDefault();
 
-            if (responseGroup.Status == Status.Ok)
+            if (oldVote != null)
             {
-                var group = responseGroup.Data;
-
-                var user = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(model.GroupId) 
-                    && x.Name == model.Username).FirstOrDefault();
-
-                var oldVote = _voteService.GetAll().Result.Data.Where(x => x.GroupId == group.Id && x.UserId == user.Id).FirstOrDefault();
-
-                if (oldVote != null)
-                {
-                    await _voteService.DeleteAsync(oldVote);
-                }
-
-                _logger.LogInformation("User: {0} voted : {1}", user.Name, model.Value);
-
-                //TODO Создание Vote в сервисе
-
-                var vote = new Vote() {
-                    DateCreated = DateTime.Now,
-                    GroupId = group.Id,
-                    Value = model.Value,
-                    UserId = user.Id,
-                };
-
-                await _voteService.CreateAsync(vote);   
+                await _voteService.DeleteAsync(oldVote);
             }
 
+            _logger.LogInformation("User: {0} voted : {1}", model.UserId, model.Value);
+
+            await _voteService.CreateAsync(model);   
         }
         public async Task FinishVoting(string groupId)
 
@@ -203,7 +185,7 @@ namespace CodeCup.Hubs
 
             if (responseGroup.Status == Status.Ok)
             {
-                //TODO Закрывать группу в сервисе
+                //TODO Закрывать группу в сервисе (может и нет, так как зачем нам метод Update)
                 var group = responseGroup.Data;
                 
                 group.Status = StatusEntity.Closed;

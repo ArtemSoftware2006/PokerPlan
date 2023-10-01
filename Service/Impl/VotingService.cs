@@ -19,22 +19,27 @@ namespace Service.Impl
             _logger = logger;
         }
 
-        public async Task<BaseResponse<bool>> CreateAsync(Vote model)
+        public async Task<BaseResponse<bool>> CreateAsync(VoteVm model)
         {
             try
             {
-                bool status = await _voteRepository.CreateAsync(model);
+                var vote = new Vote() {
+                    UserId = model.UserId,
+                    GroupId = Guid.Parse(model.GroupId),
+                    Value = model.Value,
+                    DateCreated = DateTime.Now,
+                };
 
-                if (status)
-                    return new BaseResponse<bool>() {
-                        Data = status,
-                        Status = Status.Ok
-                    };
+                bool status = await _voteRepository.CreateAsync(vote);
+
+                if (!status)
+                    throw new Exception("Vote not created");
 
                 return new BaseResponse<bool>() {
                     Data = status,
-                    Status = Status.Error
+                    Status = Status.Ok
                 };
+
             }
             catch (Exception ex)
             {

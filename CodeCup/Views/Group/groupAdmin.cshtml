@@ -160,7 +160,7 @@
                 cardDiv.classList.add('card--vote--active');
 
                 
-                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : CurrentUser.name})
+                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "UserId" : CurrentUser.id})
                 .catch(function (err) {
                     return console.error(err.toString());
                 });
