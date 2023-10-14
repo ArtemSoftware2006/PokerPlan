@@ -12,7 +12,7 @@ namespace Service.Impl
     public class UserService : IUserService
     {
         //TODO Убрать костыль с выбором имен
-        private List<string> names = new List<string>() {"Ёжик","Кролик", "Тортик", "Котик", "Булочка", "Пандочка"};
+        private List<string> names = new List<string>() { "Ёжик", "Кролик", "Тортик", "Котик", "Булочка", "Пандочка" };
         private UniqueNameGenerator uniqueNameGenerator;
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
@@ -27,7 +27,7 @@ namespace Service.Impl
         {
             try
             {
-                var user = new User() 
+                var user = new User()
                 {
                     Name = GenerateNewName(groupId),
                     GroupId = Guid.Parse(groupId),
@@ -38,13 +38,15 @@ namespace Service.Impl
 
                 bool status = await _userRepository.CreateAsync(user);
 
-                if(status)
+                if (status)
                 {
                     _logger.LogInformation("Add user witf id = {0}, name = {1}", user.Id, user.Name);
 
-                    return new BaseResponse<UserVm> {
+                    return new BaseResponse<UserVm>
+                    {
                         Status = Status.Ok,
-                        Data = new UserVm() {
+                        Data = new UserVm()
+                        {
                             Name = user.Name,
                             Role = user.Role,
                             IsSpectator = user.IsSpectator,
@@ -60,17 +62,19 @@ namespace Service.Impl
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<UserVm> {
+                return new BaseResponse<UserVm>
+                {
                     Status = Status.Error,
                 };
             }
         }
-        private string GenerateNewName(string groupId) {
+        private string GenerateNewName(string groupId)
+        {
             var usernamesInGroup = _userRepository.GetAllAsync()
                                 .Where(x => x.GroupId == Guid.Parse(groupId))
                                 .Select(x => x.Name)
-                                .ToList(); 
-                            
+                                .ToList();
+
             return uniqueNameGenerator.GenerateNewName(usernamesInGroup);
         }
 
@@ -81,12 +85,14 @@ namespace Service.Impl
                 bool status = await _userRepository.DeleteAsync(model);
 
                 if (status)
-                    return new BaseResponse<bool>() {
+                    return new BaseResponse<bool>()
+                    {
                         Data = true,
                         Status = Status.Ok
                     };
-                    
-                return new BaseResponse<bool>() {
+
+                return new BaseResponse<bool>()
+                {
                     Data = false,
                     Status = Status.Error
                 };
@@ -96,7 +102,8 @@ namespace Service.Impl
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<bool> {
+                return new BaseResponse<bool>
+                {
                     Status = Status.Error,
                     Data = false
                 };
@@ -109,14 +116,17 @@ namespace Service.Impl
             {
                 var users = _userRepository.GetAllAsync().ToList();
 
-                if(users != null) {
-                    return new BaseResponse<List<User>>() {
+                if (users != null)
+                {
+                    return new BaseResponse<List<User>>()
+                    {
                         Data = users,
                         Status = Domain.Enum.Status.Ok
                     };
                 }
 
-                return new BaseResponse<List<User>> {
+                return new BaseResponse<List<User>>
+                {
                     Status = Domain.Enum.Status.Error
                 };
             }
@@ -125,7 +135,8 @@ namespace Service.Impl
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<List<User>> {
+                return new BaseResponse<List<User>>
+                {
                     Status = Domain.Enum.Status.Error,
                 };
             }
@@ -138,12 +149,14 @@ namespace Service.Impl
                 var user = await _userRepository.GetAsync(id);
 
                 if (user != null)
-                    return new BaseResponse<User>() {
+                    return new BaseResponse<User>()
+                    {
                         Data = user,
                         Status = Status.Ok
                     };
-                
-                return new BaseResponse<User>() {
+
+                return new BaseResponse<User>()
+                {
                     Status = Status.Error
                 };
             }
@@ -152,7 +165,8 @@ namespace Service.Impl
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<User> {
+                return new BaseResponse<User>
+                {
                     Status = Status.Error,
                 };
             }
@@ -165,25 +179,28 @@ namespace Service.Impl
                 bool status = await _userRepository.UpdateAsync(model);
 
                 if (status)
-                    return new BaseResponse<bool>() {
+                    return new BaseResponse<bool>()
+                    {
                         Data = true,
                         Status = Status.Ok
                     };
-                
-                return new BaseResponse<bool>() {
+
+                return new BaseResponse<bool>()
+                {
                     Status = Status.Error,
                 };
-                
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<bool>() {
+                return new BaseResponse<bool>()
+                {
                     Data = false,
                     Status = Status.Error
-                }; 
+                };
             }
         }
 
@@ -198,24 +215,26 @@ namespace Service.Impl
                     bool status = await _userRepository.DeleteAsync(user);
 
                     if (status)
-                    return new BaseResponse<bool>() {
-                        Data = true,
-                        Status = Status.Ok
-                    };
+                        return new BaseResponse<bool>()
+                        {
+                            Data = true,
+                            Status = Status.Ok
+                        };
                 }
-                
+
                 throw new Exception("User don`t logout");
-                
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 _logger.LogError(ex.StackTrace);
 
-                return new BaseResponse<bool>() {
+                return new BaseResponse<bool>()
+                {
                     Data = false,
                     Status = Status.Error
-                }; 
+                };
             }
         }
     }

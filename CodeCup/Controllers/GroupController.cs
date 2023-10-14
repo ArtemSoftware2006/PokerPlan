@@ -19,31 +19,32 @@ namespace Новая_папка.Controllers
             _logger = logger;
         }
         [HttpGet]
-        public IActionResult CreateGroup() 
+        public IActionResult CreateGroup()
         {
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(string name) 
+        public async Task<IActionResult> CreateGroup(string name)
         {
             name = name.Trim();
 
             string domainName = Request.Host.Value;
 
             Guid groupId = Guid.NewGuid();
-            string link = domainName  + "/Group/Join/" + groupId;
+            string link = domainName + "/Group/Join/" + groupId;
 
-            await  _groupService.CreateAsync(new GroupVm() 
+            await _groupService.CreateAsync(new GroupVm()
             {
-                Id = groupId, Name = name
+                Id = groupId,
+                Name = name
             });
 
-            return View("groupAdmin", 
-            new GroupModel() 
+            return View("groupAdmin",
+            new GroupModel()
             {
-                Name = name, 
-                Link = link, 
-                Id=groupId.ToString(),
+                Name = name,
+                Link = link,
+                Id = groupId.ToString(),
                 Role = Role.Admin,
             });
         }
@@ -57,7 +58,7 @@ namespace Новая_папка.Controllers
 
                 if (response.Status == Status.Ok)
                 {
-                    var responseUser =  _userService.GetAll();
+                    var responseUser = _userService.GetAll();
 
                     if (response.Status == Status.Ok)
                     {
@@ -75,25 +76,25 @@ namespace Новая_папка.Controllers
                         if (response.Data != null && response.Data.Status != StatusEntity.Closed)
                         {
                             //TODO В GroupMidel должна быть добавлена роль пользователя
-                            return View("groupAdmin", 
-                                new GroupModel() 
+                            return View("groupAdmin",
+                                new GroupModel()
                                 {
-                                    Name = response.Data.Name, 
-                                    Id = group, 
-                                    Link = link, 
+                                    Name = response.Data.Name,
+                                    Id = group,
+                                    Link = link,
                                     Role = Role.User,
                                 });
-                        }     
-                    } 
+                        }
+                    }
                 }
-                
+
                 return Redirect("/Error/NotFound");
             }
             catch (System.Exception)
             {
                 return Redirect("/Error/NotFound");
             }
-            
+
         }
 
         public IActionResult ModalLink(string link)

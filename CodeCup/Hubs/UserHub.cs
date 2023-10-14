@@ -6,7 +6,7 @@ using Новая_папка.Models;
 
 namespace CodeCup.Hubs
 {
-    public class UserHub: Hub
+    public class UserHub : Hub
     {
         private readonly ILogger<UserHub> _logger;
         private readonly IGroupService _groupService;
@@ -19,16 +19,16 @@ namespace CodeCup.Hubs
             _groupService = groupService;
             _logger = logger;
         }
-       
+
         public async Task CreateGroup(string groupId)
         {
             var response = await _userService.CreateAsync(groupId, Role.Admin);
 
             if (response.Status == Status.Ok)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupId);            
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
 
-                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() {response.Data}, StatusEntity.Active);   
+                await Clients.Group(groupId).SendAsync("UserAdded", new List<UserVm>() { response.Data }, StatusEntity.Active);
             }
         }
         public async Task JoinGroupFromLink(string groupId)
@@ -38,25 +38,25 @@ namespace CodeCup.Hubs
             if (responseGroup.Status == Status.Ok)
             {
                 var group = responseGroup.Data;
-                
+
                 _logger.LogInformation("User: joined group {1}", groupId);
 
                 await _userService.CreateAsync(groupId, Role.User);
 
-                var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x => 
-                        new UserVm() {Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = Spectator.User })
+                var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x =>
+                        new UserVm() { Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = Spectator.User })
                         .ToList();
 
                 if (group.Status != StatusEntity.Closed)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
                     await Clients.Group(groupId).SendAsync("UserAdded", users, group.Status);
-                }   
-                
+                }
+
             }
-            
+
         }
-        public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator) 
+        public async Task ChooseNameAndSeparator(string groupId, string userId, string username, string isSpectator)
         {
             //TODO возможно требуется разделить логику изменения имени и логику изменения isSpectator
 
@@ -73,23 +73,24 @@ namespace CodeCup.Hubs
                 user.IsSpectator = (Spectator)int.Parse(isSpectator);
 
                 // TODO не удалять votes, а менять их статус на неактивный
-                if(user.IsSpectator == Spectator.Spectator)  {
+                if (user.IsSpectator == Spectator.Spectator)
+                {
                     await _voteService.DeleteByUserIdAsync(int.Parse(userId));
-                }  
+                }
 
                 await _userService.UpdateAsync(user);
 
                 _logger.LogInformation(userId + " changed name to " + username);
                 _logger.LogInformation(userId + " choose spectator to " + isSpectator);
 
-                await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);      
+                await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);
             }
         }
         public async Task DeleteVote(string userId)
         {
             _logger.LogInformation("User: {0} deleted vote", userId);
 
-            await _voteService.DeleteByUserIdAsync(int.Parse(userId));   
+            await _voteService.DeleteByUserIdAsync(int.Parse(userId));
         }
         public async Task SetVote(VoteVm model)
         {
@@ -104,7 +105,7 @@ namespace CodeCup.Hubs
 
             _logger.LogInformation("User: {0} voted : {1}", model.UserId, model.Value);
 
-            await _voteService.CreateAsync(model);   
+            await _voteService.CreateAsync(model);
         }
         public async Task FinishVoting(string groupId)
 
@@ -136,16 +137,16 @@ namespace CodeCup.Hubs
                 {
                     isFullConsent = usersVotes.All(x => x.Value == usersVotes[0].Value);
 
-                    average = Math.Round(sumValues / countVotind,1);
+                    average = Math.Round(sumValues / countVotind, 1);
                 }
-                else    
+                else
                     average = 0;
-                
-                await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);      
-                
+
+                await Clients.Group(groupId).SendAsync("FinishVoting", usersVotes, average, isFullConsent);
+
             }
         }
-        public async Task StartNewVoting(string groupId) 
+        public async Task StartNewVoting(string groupId)
         {
             //TODO Не удалять старые голоса, а менять их статус на неактивные (можно и удалять, 
             //если создать отдельный сервис для отображения истории голосов и сохранять историю на клиенте)
@@ -157,10 +158,11 @@ namespace CodeCup.Hubs
             {
                 var responseUpdate = await _groupService.ActivateGroupAsync(groupId);
 
-                if(responseUpdate.Status == Status.Ok) {
+                if (responseUpdate.Status == Status.Ok)
+                {
                     await _voteService.DeleteRow(votes.ToList());
 
-                    await Clients.Group(groupId).SendAsync("StartNewVoting");   
+                    await Clients.Group(groupId).SendAsync("StartNewVoting");
                 }
             }
 
@@ -173,17 +175,17 @@ namespace CodeCup.Hubs
             {
                 //TODO Закрывать группу в сервисе (может и нет, так как зачем нам метод Update)
                 var group = responseGroup.Data;
-                
+
                 group.Status = StatusEntity.Closed;
 
                 var responseUpdate = await _groupService.UpdateAsync(group);
 
                 if (responseUpdate.Status == Status.Ok)
-                    await Clients.Group(groupId).SendAsync("CloseGroup");   
+                    await Clients.Group(groupId).SendAsync("CloseGroup");
             }
         }
-        public async Task Logout(string groupId, string userId) 
-        {            
+        public async Task Logout(string groupId, string userId)
+        {
             var response = await _userService.Logout(int.Parse(userId));
 
             if (response.Status == Status.Ok)
