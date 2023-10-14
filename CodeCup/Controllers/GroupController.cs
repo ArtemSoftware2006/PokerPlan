@@ -31,7 +31,7 @@ namespace Новая_папка.Controllers
             string domainName = Request.Host.Value;
 
             Guid groupId = Guid.NewGuid();
-            string link = domainName + "/Group/Join/" + groupId;
+            string link = domainName + "/Group/JoinToGroup/" + groupId;
 
             await _groupService.CreateAsync(new GroupVm()
             {
@@ -49,7 +49,7 @@ namespace Новая_папка.Controllers
             });
         }
         [HttpGet("{group}")]
-        public async Task<IActionResult> Join(string group)
+        public async Task<IActionResult> JoinToGroup(string group)
         {
             //TODO Реализовать Join в слое сервисов (или проверку на возможность присоединения к группе)
             try
