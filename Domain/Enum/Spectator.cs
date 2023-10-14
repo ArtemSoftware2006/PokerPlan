@@ -1,8 +1,8 @@
 namespace Domain.Enum
 {
-    public enum Spectator
+    public enum RoleInGroup
     {
         Spectator,
-        User
+        Participant
     }
 }

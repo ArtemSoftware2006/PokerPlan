@@ -44,7 +44,7 @@ namespace CodeCup.Hubs
                 await _userService.CreateAsync(groupId, Role.User);
 
                 var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x =>
-                        new UserVm() { Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = Spectator.User })
+                        new UserVm() { Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = RoleInGroup.Participant })
                         .ToList();
 
                 if (group.Status != StatusEntity.Closed)
@@ -70,10 +70,10 @@ namespace CodeCup.Hubs
                 var user = userResponse.Data;
 
                 user.Name = username;
-                user.IsSpectator = (Spectator)int.Parse(isSpectator);
+                user.IsSpectator = (RoleInGroup)int.Parse(isSpectator);
 
                 // TODO не удалять votes, а менять их статус на неактивный
-                if (user.IsSpectator == Spectator.Spectator)
+                if (user.IsSpectator == RoleInGroup.Spectator)
                 {
                     await _voteService.DeleteByUserIdAsync(int.Parse(userId));
                 }

@@ -33,7 +33,7 @@ namespace Service.Impl
                     GroupId = Guid.Parse(groupId),
                     Role = role,
                     DateCreated = DateTime.Now,
-                    IsSpectator = Spectator.User
+                    IsSpectator = RoleInGroup.Participant
                 };
 
                 bool status = await _userRepository.CreateAsync(user);
