@@ -11,8 +11,6 @@ namespace Service.Impl
 {
     public class UserService : IUserService
     {
-        //TODO Убрать костыль с выбором имен
-        private List<string> names = new List<string>() { "Ёжик", "Кролик", "Тортик", "Котик", "Булочка", "Пандочка" };
         private UniqueNameGenerator uniqueNameGenerator;
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;

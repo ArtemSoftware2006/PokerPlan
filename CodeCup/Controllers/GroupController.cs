@@ -64,7 +64,7 @@ namespace Новая_папка.Controllers
                     {
                         string domainName = Request.Host.Value;
 
-                        string link = domainName + "/Group/Join/" + group;
+                        string link = domainName + "/Group/JoinToGroup/" + group;
 
                         var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(group));
 
