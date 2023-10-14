@@ -205,10 +205,10 @@
         }
 
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
+    hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
     })
 
     usernameDropdownItem.addEventListener("click", function () {
@@ -216,7 +216,17 @@
     })
 
     logoutBtn.addEventListener("click", function () {
-        hubConnection.invoke("Logout", groupId)
+
+        console.log(CurrentUser.role + " " + Roles.Admin + " " + CurrentUser.role == Roles.Admin)
+
+        if(CurrentUser.role == Roles.Admin) {
+            hubConnection.invoke("CloseGroup", groupId)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+        }
+
+        hubConnection.invoke("Logout", groupId, CurrentUser.id.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -381,6 +391,11 @@
                 userCards[i].children[1].remove()
             }
         }
+    });
+
+    hubConnection.on("CloseGroup", function() {
+        
+        window.location.reload();
     });
 
     hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {

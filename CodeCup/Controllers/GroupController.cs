@@ -9,9 +9,11 @@ namespace Новая_папка.Controllers
     [Route("[controller]/[action]")]
     public class GroupController : Controller
     {
+        private const int MAX_USERS_IN_GROUP = 6;
         private readonly ILogger<GroupController> _logger;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
+
         public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService)
         {
             _userService = userService;
@@ -68,7 +70,7 @@ namespace Новая_папка.Controllers
 
                         var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(group));
 
-                        if (!(countUsers < 6))
+                        if (!(countUsers < MAX_USERS_IN_GROUP))
                         {
                             return Redirect("/Error/NotFound");
                         }
