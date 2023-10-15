@@ -122,7 +122,7 @@ namespace CodeCup.Hubs
             bool isFullConsent = false;
             double average = 0;
 
-            var responseGroup = await _groupService.CloseGroupAsync(groupId);
+            var responseGroup = await _groupService.StoppedGroupAsync(groupId);
 
             if (responseGroup.Status == Status.Ok)
             {

@@ -112,7 +112,7 @@ namespace Service.Impl
             throw  new NotImplementedException();
         }
 
-        public async Task<BaseResponse<bool>> CloseGroupAsync(string groupId)
+        public async Task<BaseResponse<bool>> StoppedGroupAsync(string groupId)
         {
             try
             {
@@ -120,7 +120,7 @@ namespace Service.Impl
 
                 if (group != null)
                 {
-                    group.Status = StatusEntity.Closed;
+                    group.Status = StatusEntity.Stopped;
 
                     bool status = await _groupRepository.UpdateAsync(group);
 

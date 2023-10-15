@@ -104,14 +104,18 @@
         User: 1
     }
 
+    const StatusGroup = {
+        Stopped: 0,
+        Active: 1
+    }
+
     const UserRoleInGroup = {
         Spectator : 0,
         Participant : 1
     }
 
-    let isVotingStopped = false;
     let isFullConsent = false;
-    let isVoting = true;
+    let votingStatus;
 
     let average = 0;
 
@@ -173,12 +177,16 @@
     isSpectatorFieldMain.addEventListener("change", function () {
         if(isSpectatorFieldMain.checked) {
             CurrentUser.isSpectator  = UserRoleInGroup.Spectator
-            deleteVote(CurrentUser.id)
+            if(votingStatus == StatusGroup.Stopped) {
+                deleteVote(CurrentUser.id)
+            }
             hideVotingCard()
             deleteActiveFromCard()
         } else {
             CurrentUser.isSpectator = UserRoleInGroup.Participant
-            showVotingCard()
+            if(votingStatus == StatusGroup.Active) {
+                showVotingCard()
+            }
         }
 
         showUserDependingRole(CurrentUser.name, CurrentUser.isSpectator)
@@ -303,6 +311,7 @@
 
     hubConnection.on("FinishVoting", function(usersVote, average, consent) {
         isFullConsent = consent
+        votingStatus = StatusGroup.Stopped
 
         if(CurrentUser.role == Roles.Admin) {
             if(isFullConsent)
@@ -313,8 +322,9 @@
             stopBtn.classList.add("d-none")
         }
 
-        if(!isFullConsent)
+        if(!isFullConsent) {
             messageNotConsent.classList.remove("d-none")
+        }
 
         hideVotingCard()
         deleteActiveFromCard()
@@ -322,16 +332,13 @@
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
         
-        userCards.forEach(function(userCard) {
-            if(userCard.children[1].textContent != "") {
-                userCard.children[0].classList.add("card--add--user--value");
-                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.key;
-            }
-        });
+        showValueOnUserCard(userCards, usersVote)
 
     });
 
     hubConnection.on("StartNewVoting", function() {
+
+        votingStatus = StatusGroup.Active
 
         messageNotConsent.classList.add("d-none")
 
@@ -348,13 +355,7 @@
 
         showVotingCard()
 
-        userCards.forEach(function(userCard) {
-            if(userCard.children[1].textContent != "") {
-                userCard.children[0].classList.remove("card--add--user--value");
-                userCard.children[0].textContent = "";
-            }
-        });
-
+        resetValueFromUserCard()
     });
 
     hubConnection.on("Logout", function(userId) {
@@ -406,6 +407,7 @@
 
     hubConnection.on("UserAdded", function(users, statusGroup) {
         console.log(users)
+        votingStatus = statusGroup
 
          if(CurrentUser.name === "") {
             CurrentUser = users[users.length - 1]
@@ -416,6 +418,11 @@
 
             usernameDropdownItem.textContent = CurrentUser.name
         }   
+
+        if (statusGroup == StatusGroup.Stopped) {
+            hideVotingCard();
+        }
+
 
         for(let i = 0; i < users.length; i++) {
 
@@ -498,6 +505,24 @@
     function hideVotingCard() {
         cardsVoting.forEach(function(card) {
             card.classList.add("d-none");
+        });
+    }
+
+    function resetValueFromUserCard() {
+        userCards.forEach(function(userCard) {
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.remove("card--add--user--value");
+                userCard.children[0].textContent = "";
+            }
+        });
+    }
+
+    function showValueOnUserCard(userCards, usersVote) {
+        userCards.forEach(function(userCard) {
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.add("card--add--user--value");
+                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.key;
+            }
         });
     }
 
