@@ -99,11 +99,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 <script>
 
+    const Roles = {
+        Admin: 0,
+        User: 1
+    }
+
+    const UserRoleInGroup = {
+        Spectator : 0,
+        Participant : 1
+    }
+
     let isVotingStopped = false;
     let isFullConsent = false;
     let isVoting = true;
 
-    let value = 0;
     let average = 0;
 
     let groupId = '@Html.Raw(guidValue)';
@@ -135,37 +144,24 @@
 
     let userCards = document.querySelectorAll(".card--container");
     let cardsVoting = document.querySelectorAll(".card--vote");
-    let cardDivs = document.querySelectorAll('.card--vote');
-
 
 
     currentNameMainField.textContent = CurrentUser.name
 
 
     //Создание событий обработки клика на карточки голосов
-    cardDivs.forEach(function(cardDiv) {
-        cardDiv.addEventListener('click', function() {
-            if(cardDiv.classList.contains('card--vote--active')) {
-                cardDiv.classList.remove('card--vote--active');
+    cardsVoting.forEach(function(card) {
+        card.addEventListener('click', function() {
+            if(card.classList.contains('card--vote--active')) {
+                card.classList.remove('card--vote--active');
 
-                hubConnection.invoke("DeleteVote", CurrentUser.id.toString())
-                .catch(function (err) {
-                    return console.error(err.toString());
-                });
-
-                value = 0;
+                deleteVote(CurrentUser.id)
             }
             else{
                 document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
-                cardDiv.classList.add('card--vote--active');
-
+                card.classList.add('card--vote--active');
                 
-                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "UserId" : CurrentUser.id})
-                .catch(function (err) {
-                    return console.error(err.toString());
-                });
-
-                value = cardDiv.textContent
+                setVote(card.textContent, groupId, CurrentUser.id)
             }
         });
     });
@@ -173,42 +169,23 @@
 
     isSpectatorFieldMain.addEventListener("change", function () {
         if(isSpectatorFieldMain.checked) {
-            CurrentUser.spectator = 0
-
-            for(let j = 0; j < userCards.length; j++) {
-
-                userCards[j].children[0].classList.remove("card--add--user");
-
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.add("card--add--user--shower");
-                }
-
-                cardsVoting.forEach(function(card) {
-                    card.classList.add("d-none");
-                });
-
-            }
-
+            CurrentUser.isSpectator  = UserRoleInGroup.Spectator
+            deleteVote(CurrentUser.id)
+            hideVotingCard()
+            deleteActiveFromCard()
         } else {
-            CurrentUser.spectator = 1
-
-            for(let j = 0; j < userCards.length; j++) {
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.remove("card--add--user--shower");
-                    userCards[j].children[0].classList.add("card--add--user");
-                }
-            }
-
-            cardsVoting.forEach(function(card) {
-                card.classList.remove("d-none");
-            });
+            CurrentUser.isSpectator = UserRoleInGroup.Participant
+            showVotingCard()
         }
 
+        showUserDependingRole(CurrentUser.name, CurrentUser.isSpectator)
 
-    hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+            
+        console.log("Change Name and isSpectator")
     })
 
     usernameDropdownItem.addEventListener("click", function () {
@@ -271,10 +248,15 @@
 
         let newUsername = usernameField.value
 
-        if (isSpectatorField.checked )
-            CurrentUser.spectator = 0
-        else 
-            CurrentUser.spectator = 1
+        if (isSpectatorField.checked ) {
+            CurrentUser.spectator = UserRoleInGroup.Spectator
+            hideVotingCard()
+            deleteVote(CurrentUser.id)
+        }
+        else {
+            CurrentUser.spectator = UserRoleInGroup.Participant
+            showVotingCard()
+        }
 
         hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.isSpectator.toString())
             .catch(function (err) {
@@ -333,9 +315,8 @@
         if(!isFullConsent)
             messageNotConsent.classList.remove("d-none")
 
-        cardsVoting.forEach(function(card) {
-            card.classList.add("d-none");
-        });
+        hideVotingCard()
+        deleteActiveFromCard()
 
         averageDiv.textContent = average;
         averageDiv.classList.remove("d-none")
@@ -364,10 +345,7 @@
 
         averageDiv.classList.add("d-none")
 
-
-        cardsVoting.forEach(function(card) {
-            card.classList.remove("d-none");
-        });
+        showVotingCard()
 
         userCards.forEach(function(userCard) {
             if(userCard.children[1].textContent != "") {
@@ -379,7 +357,8 @@
     });
 
     hubConnection.on("Logout", function(userId) {
-        
+        //TODO Видимо, когда выходит сам пользователь, то происходит ошибка в for.  
+        // И потому происходит перезагрузка страницы
         let deleteUser = usersInGroup.find(user => user.id == userId); 
 
         usersInGroup = usersInGroup.filter(user => user.id != userId);
@@ -393,17 +372,19 @@
         }
     });
 
+    //TODO Можно выдавать сообщение, а не перезагружать страницу
     hubConnection.on("CloseGroup", function() {
         
         window.location.reload();
     });
 
-    hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
+    hubConnection.on("UserChangeNameAndSeparator", function(userId, newUsername, newIsSpectator) {
         let userUpadated = usersInGroup.find(user => user.id == userId);
         let index = usersInGroup.indexOf(userUpadated);
 
         let oldName = usersInGroup[index].name
         usersInGroup[index].name = newUsername;
+        usersInGroup[index].isSpectator = newIsSpectator;
 
         if(userId == CurrentUser.id) {
             currentNameMainField.textContent = newUsername
@@ -411,21 +392,26 @@
             usernameDropdown.textContent = newUsername
             usernameDropdownItem.textContent = newUsername
         }
-
+        //Логика изменения карточки на "Наблюдатель" и изменение имени
         for(let i = 0; i < userCards.length; i++) {
+            
             if(userCards[i].children[1].textContent == oldName) {
                 userCards[i].children[1].textContent = newUsername
                 break;
             } 
         }
+        showUserDependingRole(newUsername, newIsSpectator)
     });
 
     hubConnection.on("UserAdded", function(users, statusGroup) {
+        console.log(users)
+
          if(CurrentUser.name === "") {
             CurrentUser = users[users.length - 1]
             document.getElementById("CurrentName").textContent = CurrentUser.name ;
 
             usernameField.value = CurrentUser.name
+            newUsernameField.value = CurrentUser.name
 
             usernameDropdownItem.textContent = CurrentUser.name
         }   
@@ -438,11 +424,13 @@
                 let messageElement = document.createElement("p");
                 messageElement.textContent = users[i].name ;
                 
+                //Отображение пользователей в группе в карточках
                 for(let j = 0; j < userCards.length; j++) {
 
                     if(userCards[j].childElementCount === 1) {
                         userCards[j].appendChild(messageElement);
-                        userCards[j].children[0].classList.add("card--add--user");
+
+                        showUserDependingRole(users[i].name, users[i].isSpectator)
                         break 
                     }
                 }
@@ -451,31 +439,85 @@
     });
 
     hubConnection.start()
-        .then(function () {
+    .then(function () {
 
-            if(@role == Roles.Admin)
-                hubConnection.invoke("CreateGroup", groupId)
-                .catch(function (err) {
-                    return console.error(err.toString());
-                })
-            else {
-                hubConnection.invoke("JoinGroupFromLink", groupId)
-                .catch(function (err) {
-                    return console.error(err.toString());
-                });
+        if(@role == Roles.Admin)
+            hubConnection.invoke("CreateGroup", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            })
+        else {
+            hubConnection.invoke("JoinGroupFromLink", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
 
-                stopBtn.classList.add("d-none")
-            }
-        }) 
+            stopBtn.classList.add("d-none")
+        }
+    }) 
+    .catch(function (err) {
+        return console.error(err.toString());
+    })  
+
+    //Показ карточек голоса у участника
+    function showVotingCard() {
+        if(CurrentUser.isSpectator == UserRoleInGroup.Participant) {
+            cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });   
+        }
+    }
+
+    function deleteVote(userId) {
+        hubConnection.invoke("DeleteVote", userId)
         .catch(function (err) {
             return console.error(err.toString());
-        })  
+        });
+    }
+
+    function deleteActiveFromCard() {
+        cardsVoting.forEach(function(card) {
+            if(card.classList.contains('card--vote--active')) {
+                card.classList.remove('card--vote--active');
+            }
+        });
+    }
+
+    function setVote(value, groupId, userId) {
+        hubConnection.invoke("SetVote", {"Value" : value, "GroupId" : groupId, "UserId" : userId})
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    }
+
+    function hideVotingCard() {
+        cardsVoting.forEach(function(card) {
+            card.classList.add("d-none");
+        });
+    }
+
+    //TODO неоднозначное имя - метод не выбирает тип карточки пользователя в зависимости от его роли
+    //А не скрывает карточку
+    function showUserDependingRole(username, userRoleInGroup) {
+
+        console.log("CreateUserCardToShower : " + username + " " + userRoleInGroup)
+        for(let i = 0; i < userCards.length; i++) {
+
+            if(userCards[i].children[1].textContent == username) {
+                if(userRoleInGroup == UserRoleInGroup.Spectator) {
+                    userCards[i].children[0].classList.remove("card--add--user");
+                    userCards[i].children[0].classList.add("card--add--user--shower");
+
+                }
+                if(userRoleInGroup == UserRoleInGroup.Participant) {
+                    userCards[i].children[0].classList.add("card--add--user");
+                    userCards[i].children[0].classList.remove("card--add--user--shower");
+                }
+
+                break
+            }
+        }
+    }
         
-
-
-const Roles = {
-    Admin: 0,
-    User: 1
-}
     
 </script>

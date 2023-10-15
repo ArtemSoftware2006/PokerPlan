@@ -43,8 +43,10 @@ namespace CodeCup.Hubs
 
                 await _userService.CreateAsync(groupId, Role.User);
 
-                var users = _userService.GetAll().Data.Where(x => x.GroupId == Guid.Parse(groupId)).Select(x =>
-                        new UserVm() { Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = RoleInGroup.Participant })
+                var users = _userService.GetAll().Data
+                        .Where(x => x.GroupId == Guid.Parse(groupId))
+                        .Select(x =>
+                            new UserVm() { Name = x.Name, Id = x.Id, Role = x.Role, IsSpectator = x.IsSpectator })
                         .ToList();
 
                 if (group.Status != StatusEntity.Closed)
@@ -61,6 +63,7 @@ namespace CodeCup.Hubs
             //TODO возможно требуется разделить логику изменения имени и логику изменения isSpectator
 
             Console.WriteLine("User: {0} changed name to {1}", userId, username);
+            Console.WriteLine("User: {0} changed isSpectator to {1}", userId, (RoleInGroup)int.Parse(isSpectator));
 
             var userResponse = await _userService.GetAsync(int.Parse(userId));
 
@@ -76,6 +79,7 @@ namespace CodeCup.Hubs
                 if (user.IsSpectator == RoleInGroup.Spectator)
                 {
                     await _voteService.DeleteByUserIdAsync(int.Parse(userId));
+                    _logger.LogInformation("DELETE VOTE");
                 }
 
                 await _userService.UpdateAsync(user);
@@ -83,7 +87,7 @@ namespace CodeCup.Hubs
                 _logger.LogInformation(userId + " changed name to " + username);
                 _logger.LogInformation(userId + " choose spectator to " + isSpectator);
 
-                await Clients.Group(groupId).SendAsync("UserChangeName", user.Id, user.Name, user.IsSpectator);
+                await Clients.Group(groupId).SendAsync("UserChangeNameAndSeparator", user.Id, user.Name, user.IsSpectator);
             }
         }
         public async Task DeleteVote(string userId)
