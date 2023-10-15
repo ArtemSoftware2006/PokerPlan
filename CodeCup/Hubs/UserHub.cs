@@ -97,7 +97,9 @@ namespace CodeCup.Hubs
             await _voteService.DeleteByUserIdAsync(int.Parse(userId));
         }
         public async Task SetVote(VoteVm model)
-        {
+        {   
+            Console.WriteLine(model.UserId.ToString() + " " + model.Value.ToString() + " " + model.GroupId.ToString());
+
             var oldVote = _voteService.GetAll().Result.Data
                 .Where(x => x.GroupId == Guid.Parse(model.GroupId) && x.UserId == model.UserId)
                 .FirstOrDefault();
@@ -130,7 +132,7 @@ namespace CodeCup.Hubs
 
                 foreach (UserVoteVm item in usersVotes)
                 {
-                    if (!(item.Value == "?" || item.Value == "Кофе"))
+                    if (!(item.Key == "?" || item.Key == "Кофе"))
                     {
                         sumValues += float.Parse(item.Value);
                         countVotind++;

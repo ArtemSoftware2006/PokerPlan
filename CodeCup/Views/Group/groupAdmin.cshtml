@@ -8,7 +8,7 @@
     int role = Convert.ToInt32(Model.Role);
 
     string guidValue = Model.Id.ToString();
-    string[] cardValues = new string[] {"0","1","2","3","5","7","10","?"};
+    string[] cardsKey = Model.CardsKey.Select(x => x.Key).ToArray();
 }
 
 @await Html.PartialAsync("Header", Model.Name)
@@ -68,7 +68,7 @@
             Единого мнения о сложности этой задачи нет. Вам нужно обсудить результаты голосования. После обсуждения - повторное голосование.
         </div>
 
-        @CardsDisplayer.Invoke(cardValues)
+        @CardsDisplayer.Invoke(cardsKey)
 
     </div>
 
@@ -115,11 +115,13 @@
 
     let average = 0;
 
-    let groupId = '@Html.Raw(guidValue)';
+    let groupId = "@Html.Raw(guidValue)";
+
+    let cardSet = @Html.Raw(Json.Serialize(Model.CardsKey));
 
     let usersInGroup = []
 
-    let CurrentUser = {name : "", id : "0", isSpectator : 1, role : 1}
+    let CurrentUser = {name : "", id : 0, isSpectator : 1, role : 1}
 
 
     let stopBtn = document.getElementById("stopBtn")
@@ -160,8 +162,9 @@
             else{
                 document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
                 card.classList.add('card--vote--active');
+
                 
-                setVote(card.textContent, groupId, CurrentUser.id)
+                setVote(card.textContent, cardSet.find(x => x.key == card.textContent).value.toString(), groupId, CurrentUser.id)
             }
         });
     });
@@ -194,7 +197,10 @@
 
     logoutBtn.addEventListener("click", function () {
 
-        console.log(CurrentUser.role + " " + Roles.Admin + " " + CurrentUser.role == Roles.Admin)
+        hubConnection.invoke("Logout", groupId, CurrentUser.id.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
 
         if(CurrentUser.role == Roles.Admin) {
             hubConnection.invoke("CloseGroup", groupId)
@@ -202,12 +208,6 @@
                     return console.error(err.toString());
                 });
         }
-
-        hubConnection.invoke("Logout", groupId, CurrentUser.id.toString())
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-
     });
 
     newVotingBtn.addEventListener("click", function () {
@@ -279,13 +279,14 @@
 
 
     window.onbeforeunload = function() {
-        if(CurrentUser.role == Roles.Admin)
-            hubConnection.invoke("CloseGroup", groupId)
+
+        hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
             .catch(function (err) {
                 return console.error(err.toString());
-            });
-        else 
-            hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+            })
+
+        if(CurrentUser.role == Roles.Admin)
+            hubConnection.invoke("CloseGroup", groupId)
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -324,7 +325,7 @@
         userCards.forEach(function(userCard) {
             if(userCard.children[1].textContent != "") {
                 userCard.children[0].classList.add("card--add--user--value");
-                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
+                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.key;
             }
         });
 
@@ -469,7 +470,10 @@
     }
 
     function deleteVote(userId) {
-        hubConnection.invoke("DeleteVote", userId)
+
+        console.log(userId)
+
+        hubConnection.invoke("DeleteVote", userId.toString())
         .catch(function (err) {
             return console.error(err.toString());
         });
@@ -483,8 +487,9 @@
         });
     }
 
-    function setVote(value, groupId, userId) {
-        hubConnection.invoke("SetVote", {"Value" : value, "GroupId" : groupId, "UserId" : userId})
+    function setVote(key, value, _groupId, userId) {
+
+        hubConnection.invoke("SetVote", {Value : value.toString(), Key : key, GroupId : _groupId.toString(), UserId :  userId})
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -496,7 +501,6 @@
         });
     }
 
-    //TODO неоднозначное имя - метод не выбирает тип карточки пользователя в зависимости от его роли
     //А не скрывает карточку
     function showUserDependingRole(username, userRoleInGroup) {
 

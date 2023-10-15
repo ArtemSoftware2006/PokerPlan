@@ -8,5 +8,6 @@ namespace Domain.Entity
         public string Name { get; set; }
         public DateTime DateCreated { get; set; }
         public StatusEntity Status { get; set; }
+        public CardSet CardSet {get; set;}
     }
 }

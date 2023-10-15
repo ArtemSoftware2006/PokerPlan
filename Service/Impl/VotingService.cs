@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using DAL.interfaces;
 using Domain;
 using Domain.Entity;
@@ -28,6 +29,7 @@ namespace Service.Impl
                     GroupId = Guid.Parse(model.GroupId),
                     Value = model.Value,
                     DateCreated = DateTime.Now,
+                    Key = model.Key,
                 };
 
                 bool status = await _voteRepository.CreateAsync(vote);
@@ -141,7 +143,7 @@ namespace Service.Impl
 
                 var usersVotes = from user in users
                     join vote in votes on user.Id equals vote.UserId
-                    select new UserVoteVm { Name = user.Name, Value = vote.Value };
+                    select new UserVoteVm { Name = user.Name, Value = vote.Value, Key = vote.Key };
 
                 return new BaseResponse<List<UserVoteVm>>() {
                     Data = usersVotes.ToList(),

@@ -1,3 +1,4 @@
+using Domain.Cards;
 using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ namespace Новая_папка.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(string name)
+        public async Task<IActionResult> CreateGroup(string name, int typeCards)
         {
             name = name.Trim();
 
@@ -35,10 +36,12 @@ namespace Новая_папка.Controllers
             Guid groupId = Guid.NewGuid();
             string link = domainName + "/Group/JoinToGroup/" + groupId;
 
+            //TODO Создание в сервисе
             await _groupService.CreateAsync(new GroupVm()
             {
                 Id = groupId,
-                Name = name
+                Name = name,
+                CardSet = (CardSet)typeCards
             });
 
             return View("groupAdmin",
@@ -48,27 +51,28 @@ namespace Новая_папка.Controllers
                 Link = link,
                 Id = groupId.ToString(),
                 Role = Role.Admin,
+                CardsKey = chooceCards((CardSet)typeCards)
             });
         }
-        [HttpGet("{group}")]
-        public async Task<IActionResult> JoinToGroup(string group)
+        [HttpGet("{groupId}")]
+        public async Task<IActionResult> JoinToGroup(string groupId)
         {
             //TODO Реализовать Join в слое сервисов (или проверку на возможность присоединения к группе)
             try
             {
-                var response = await _groupService.GetAsync(group);
+                var response = await _groupService.GetAsync(groupId);
 
                 if (response.Status == Status.Ok)
                 {
                     var responseUser = _userService.GetAll();
 
-                    if (response.Status == Status.Ok)
+                    if (responseUser.Status == Status.Ok)
                     {
                         string domainName = Request.Host.Value;
 
-                        string link = domainName + "/Group/JoinToGroup/" + group;
+                        string link = domainName + "/Group/JoinToGroup/" + groupId;
 
-                        var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(group));
+                        var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(groupId));
 
                         if (!(countUsers < MAX_USERS_IN_GROUP))
                         {
@@ -77,14 +81,14 @@ namespace Новая_папка.Controllers
 
                         if (response.Data != null && response.Data.Status != StatusEntity.Closed)
                         {
-                            //TODO В GroupMidel должна быть добавлена роль пользователя
                             return View("groupAdmin",
                                 new GroupModel()
                                 {
                                     Name = response.Data.Name,
-                                    Id = group,
+                                    Id = groupId,
                                     Link = link,
                                     Role = Role.User,
+                                    CardsKey = chooceCards(response.Data.CardSet)
                                 });
                         }
                     }
@@ -97,6 +101,18 @@ namespace Новая_папка.Controllers
                 return Redirect("/Error/NotFound");
             }
 
+        }
+
+        private KeyValuePair<string, int>[] chooceCards(CardSet cardSet) 
+        {
+            switch (cardSet)
+            {   
+                case CardSet.TShirt : return new TShirtCards().getCards();
+                case CardSet.Fibonachi : return new FibCards().getCards();
+                case CardSet.NaturalNumbers : return new NaturalNumbersCards().getCards();
+                
+                default: throw new Exception("Набора карточек с номером : " + cardSet);
+            }
         }
 
         public IActionResult ModalLink(string link)

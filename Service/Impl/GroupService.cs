@@ -58,18 +58,18 @@ namespace Service.Impl
                     Id = model.Id,
                     Name = model.Name,
                     DateCreated = DateTime.Now,
-                    Status = StatusEntity.Active
+                    Status = StatusEntity.Active,
+                    CardSet = model.CardSet
                 };
 
                 bool status = await _groupRepository.CreateAsync(group);
 
                 if (status)
                 {
-
                     return group.Id.ToString();
                 }
 
-                return null;
+                throw new Exception("Error during creation");
 
             }
             catch (System.Exception ex)
