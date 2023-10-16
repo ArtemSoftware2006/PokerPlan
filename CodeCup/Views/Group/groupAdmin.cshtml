@@ -98,6 +98,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
 
     const Roles = {
@@ -535,6 +536,15 @@
             }
         });
     }
+
+    const qrcode = new QRCode(document.getElementById('qrcode'), {
+        text: "@Html.Raw(@Model.Link)",
+        width: 164,
+        height: 164,
+        colorDark : '#000',
+        colorLight : '#fff',
+        correctLevel : QRCode.CorrectLevel.H
+    });
 
     //А не скрывает карточку
     function showUserDependingRole(username, userRoleInGroup) {
