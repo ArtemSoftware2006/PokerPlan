@@ -120,6 +120,11 @@ namespace Новая_папка.Controllers
             return View(link);
         }
 
+        public IActionResult ModalHistory(string[] history)
+        {
+            return View(history);
+        }
+
         public IActionResult ModalChooseNameAndSpectator(ChooseNameAndSpectatorModel model)
         {
             return View(model);

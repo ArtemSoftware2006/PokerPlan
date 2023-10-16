@@ -73,6 +73,7 @@
     </div>
 
     @await Html.PartialAsync("ModalLink", Model.Link)
+    @await Html.PartialAsync("ModalHistory", "historyBody")
     @await Html.PartialAsync("ModalChooseNameAndSpectator", 
         new ChooseNameAndSpectatorModel() 
             {
@@ -127,7 +128,7 @@
 
     let CurrentUser = {name : "", id : 0, isSpectator : 1, role : 1}
 
-
+    let historyBody = document.getElementById("historyBody");
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
     let againVotingBtn = document.getElementById("againVotingBtn")
@@ -325,6 +326,15 @@
         if(!isFullConsent) {
             messageNotConsent.classList.remove("d-none")
         }
+
+        console.log(usersVote[0])
+
+        let historyItem = document.createElement("p");
+        historyItem.textContent = "Average : " + average + " / "
+        usersVote.forEach( function(item) {
+             historyItem.textContent += item.name + " " + item.key + "; "
+        })
+        historyBody.appendChild(historyItem)
 
         hideVotingCard()
         deleteActiveFromCard()
