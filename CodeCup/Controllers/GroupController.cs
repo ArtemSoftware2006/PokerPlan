@@ -28,7 +28,6 @@ namespace Новая_папка.Controllers
         {
             return View();
         }
-        //TODO Возможно CardSet в GroupVm может вызывать ошибки (как превести int к enum на клиенте?)
         [HttpPost]
         public async Task<IActionResult> CreateGroup(GroupVm model)
         {

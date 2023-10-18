@@ -175,19 +175,11 @@ namespace CodeCup.Hubs
         }
         public async Task CloseGroup(string groupId)
         {
-            var responseGroup = await _groupService.GetAsync(groupId);
+            var responseGroup = await _groupService.ClosedGroupAsync(groupId);
 
             if (responseGroup.Status == Status.Ok)
             {
-                //TODO Закрывать группу в сервисе (может и нет, так как зачем нам метод Update)
-                var group = responseGroup.Data;
-
-                group.Status = StatusEntity.Closed;
-
-                var responseUpdate = await _groupService.UpdateAsync(group);
-
-                if (responseUpdate.Status == Status.Ok)
-                    await Clients.Group(groupId).SendAsync("CloseGroup");
+                await Clients.Group(groupId).SendAsync("CloseGroup");
             }
         }
         public async Task Logout(string groupId, string userId)

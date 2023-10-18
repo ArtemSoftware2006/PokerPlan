@@ -3,6 +3,7 @@ using Domain;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.ViewModel;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Service.Interfaces;
 
@@ -46,6 +47,42 @@ namespace Service.Impl
                return new BaseResponse<bool>() {
                     Status = Status.Error,
                };
+            }
+        }
+
+        public async Task<BaseResponse<bool>> ClosedGroupAsync(string groupId)
+        {
+            try
+            {
+                Group group = await _groupRepository.GetAsync(Guid.Parse(groupId));
+
+                if (group != null)
+                {
+                    group.Status = StatusEntity.Closed;
+
+                    bool result = await _groupRepository.UpdateAsync(group);
+
+                    if (result)
+                    {
+                        return new BaseResponse<bool>() {
+                            Status = Status.Ok,
+                            Data = result
+                        };   
+                    }
+
+                    throw new DbUpdateException("Error during saving closed group");
+                }
+
+                throw new Exception("Group not found or error during closing");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return new BaseResponse<bool>() {
+                    Status = Status.Error,
+                };
             }
         }
 
