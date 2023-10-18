@@ -30,6 +30,13 @@ builder.Services.AddTransient<IVoteRepository, VoteRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddTransient<IVotingService, VotingService>();
+builder.Services.AddScoped<ILinkService, LinkService>(options => {
+    return new LinkService(
+        options.GetRequiredService<IGroupRepository>(), 
+        options.GetRequiredService<ILogger<LinkService>>(), 
+        config["DomainName"]
+    );
+});
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSignalR(options =>

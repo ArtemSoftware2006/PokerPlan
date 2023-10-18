@@ -12,11 +12,13 @@ namespace Новая_папка.Controllers
     {
         private const int MAX_USERS_IN_GROUP = 6;
         private readonly ILogger<GroupController> _logger;
+        private readonly ILinkService _linkService;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
 
-        public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService)
+        public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService, ILinkService linkService)
         {
+            _linkService = linkService;
             _userService = userService;
             _groupService = groupService;
             _logger = logger;
@@ -26,51 +28,52 @@ namespace Новая_папка.Controllers
         {
             return View();
         }
+        //TODO Возможно CardSet в GroupVm может вызывать ошибки (как превести int к enum на клиенте?)
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(string name, int typeCards)
+        public async Task<IActionResult> CreateGroup(GroupVm model)
         {
-            name = name.Trim();
-
-            string domainName = Request.Host.Value;
-
-            Guid groupId = Guid.NewGuid();
-            string link = domainName + "/Group/JoinToGroup/" + groupId;
-
-            //TODO Создание в сервисе
-            await _groupService.CreateAsync(new GroupVm()
+            try
             {
-                Id = groupId,
-                Name = name,
-                CardSet = (CardSet)typeCards
-            });
+                model.Name = model.Name.Trim();
 
-            return View("groupAdmin",
-            new GroupModel()
+                Guid groupId = await _groupService.CreateAsync(model);
+
+                string link = await _linkService.GenerateLink(groupId);
+
+                return View("groupAdmin",
+                new GroupModel()
+                {
+                    Name = model.Name,
+                    Link = link,
+                    Id = groupId.ToString(),
+                    Role = Role.Admin,
+                    CardsKey = chooceCards(model.CardSet)
+                });
+            }
+            catch (Exception ex)
             {
-                Name = name,
-                Link = link,
-                Id = groupId.ToString(),
-                Role = Role.Admin,
-                CardsKey = chooceCards((CardSet)typeCards)
-            });
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
+                return Redirect("/Error/NotFound");
+            }
         }
         [HttpGet("{groupId}")]
         public async Task<IActionResult> JoinToGroup(string groupId)
         {
             //TODO Реализовать Join в слое сервисов (или проверку на возможность присоединения к группе)
+            //TODO В NotFound показывать текст ошибки
             try
             {
-                var response = await _groupService.GetAsync(groupId);
+                var responseGroup = await _groupService.GetAsync(groupId);
 
-                if (response.Status == Status.Ok)
+                if (responseGroup.Status == Status.Ok)
                 {
                     var responseUser = _userService.GetAll();
 
                     if (responseUser.Status == Status.Ok)
                     {
-                        string domainName = Request.Host.Value;
-
-                        string link = domainName + "/Group/JoinToGroup/" + groupId;
+                        string link = await _linkService.GenerateLink(Guid.Parse(groupId));
 
                         var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(groupId));
 
@@ -79,16 +82,16 @@ namespace Новая_папка.Controllers
                             return Redirect("/Error/NotFound");
                         }
 
-                        if (response.Data != null && response.Data.Status != StatusEntity.Closed)
+                        if (responseGroup.Data != null && responseGroup.Data.Status != StatusEntity.Closed)
                         {
                             return View("groupAdmin",
                                 new GroupModel()
                                 {
-                                    Name = response.Data.Name,
+                                    Name = responseGroup.Data.Name,
                                     Id = groupId,
                                     Link = link,
                                     Role = Role.User,
-                                    CardsKey = chooceCards(response.Data.CardSet)
+                                    CardsKey = chooceCards(responseGroup.Data.CardSet)
                                 });
                         }
                     }
@@ -96,8 +99,11 @@ namespace Новая_папка.Controllers
 
                 return Redirect("/Error/NotFound");
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
                 return Redirect("/Error/NotFound");
             }
 

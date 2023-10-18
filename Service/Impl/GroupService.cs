@@ -49,13 +49,13 @@ namespace Service.Impl
             }
         }
 
-        public async Task<string> CreateAsync(GroupVm model)
+        public async Task<Guid> CreateAsync(GroupVm model)
         {
             try
             {
                 var group = new Group()
                 {
-                    Id = model.Id,
+                    Id = new Guid(),
                     Name = model.Name,
                     DateCreated = DateTime.Now,
                     Status = StatusEntity.Active,
@@ -66,13 +66,13 @@ namespace Service.Impl
 
                 if (status)
                 {
-                    return group.Id.ToString();
+                    return group.Id;
                 }
 
                 throw new Exception("Error during creation");
 
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                _logger.LogError(ex.Message);
                _logger.LogError(ex.StackTrace);
