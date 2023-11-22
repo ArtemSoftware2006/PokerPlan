@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using AutoMapper;
 using DAL.interfaces;
 using Domain;
 using Domain.Entity;
@@ -14,10 +16,12 @@ namespace Service.Impl
         private UniqueNameGenerator uniqueNameGenerator;
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
-        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger, IMapper mapper)
         {
             _logger = logger;
             _userRepository = userRepository;
+            _mapper = mapper;
 
             uniqueNameGenerator = new UniqueNameGenerator();
         }
@@ -43,13 +47,7 @@ namespace Service.Impl
                     return new BaseResponse<UserVm>
                     {
                         Status = Status.Ok,
-                        Data = new UserVm()
-                        {
-                            Name = user.Name,
-                            Role = user.Role,
-                            IsSpectator = user.IsSpectator,
-                            Id = user.Id
-                        }
+                        Data = _mapper.Map<UserVm>(user)
                     };
                 }
 
@@ -119,13 +117,13 @@ namespace Service.Impl
                     return new BaseResponse<List<User>>()
                     {
                         Data = users,
-                        Status = Domain.Enum.Status.Ok
+                        Status = Status.Ok
                     };
                 }
 
                 return new BaseResponse<List<User>>
                 {
-                    Status = Domain.Enum.Status.Error
+                    Status = Status.Error
                 };
             }
             catch (Exception ex)
@@ -135,7 +133,7 @@ namespace Service.Impl
 
                 return new BaseResponse<List<User>>
                 {
-                    Status = Domain.Enum.Status.Error,
+                    Status = Status.Error,
                 };
             }
         }

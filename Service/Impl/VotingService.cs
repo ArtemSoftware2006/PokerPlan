@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using AutoMapper;
 using DAL.interfaces;
 using Domain;
 using Domain.Entity;
@@ -13,24 +14,23 @@ namespace Service.Impl
     {
         private readonly IVoteRepository _voteRepository;
         private readonly ILogger<VotingService> _logger;
+        private readonly IMapper _mapper;
 
-        public VotingService(IVoteRepository voteRepository, ILogger<VotingService> logger)
+        public VotingService(IVoteRepository voteRepository,
+             ILogger<VotingService> logger,
+             IMapper mapper)
         {
             _voteRepository = voteRepository;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public async Task<BaseResponse<bool>> CreateAsync(VoteVm model)
         {
             try
             {
-                var vote = new Vote() {
-                    UserId = model.UserId,
-                    GroupId = Guid.Parse(model.GroupId),
-                    Value = model.Value,
-                    DateCreated = DateTime.Now,
-                    Key = model.Key,
-                };
+                var vote = _mapper.Map<Vote>(model);
+                vote.DateCreated = DateTime.Now;
 
                 bool status = await _voteRepository.CreateAsync(vote);
 

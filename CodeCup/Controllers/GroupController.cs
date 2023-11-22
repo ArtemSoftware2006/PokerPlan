@@ -11,23 +11,30 @@ namespace Новая_папка.Controllers
     public class GroupController : Controller
     {
         private const int MAX_USERS_IN_GROUP = 6;
+        private readonly string domain;
         private readonly ILogger<GroupController> _logger;
         private readonly ILinkService _linkService;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
 
-        public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService, ILinkService linkService)
+        public GroupController(ILogger<GroupController> logger, 
+            IGroupService groupService, 
+            IUserService userService, 
+            ILinkService linkService,
+            IConfiguration configuration)
         {
             _linkService = linkService;
             _userService = userService;
             _groupService = groupService;
             _logger = logger;
+            domain = configuration.GetValue<string>("DomainName");
         }
         [HttpGet]
         public IActionResult CreateGroup()
         {
             return View();
         }
+        //TODO Передавать на клиент домен хоста
         [HttpPost]
         public async Task<IActionResult> CreateGroup(GroupVm model)
         {

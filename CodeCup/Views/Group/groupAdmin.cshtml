@@ -308,7 +308,7 @@
 
 
     const hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5010/user")
+        .withUrl("@Html.Raw(@Model.Domain)" + "/user")
         .build();
 
     hubConnection.on("FinishVoting", function(usersVote, average, consent) {
