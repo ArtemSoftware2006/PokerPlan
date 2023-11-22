@@ -1,11 +1,10 @@
 namespace Domain.ViewModel
 {
-    public class UserVoteVm
+    public class VoteVm
     {
-    
-        public string Name { get; set; }        
         public string Value { get; set; }
         public string Key { get; set; }
-    
+        public string GroupId { get; set; }
+        public int UserId { get; set; }
     }
 }

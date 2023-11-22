@@ -1,0 +1,27 @@
+@model string
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="modalCLoseBtn" aria-label="Close"></button>
+            </div>
+
+            <div class="d-flex flex-column modal-body">
+
+                <div id="linkToCopy" class="p-1 m-2 addLink--container">
+                    @Model
+                </div>
+
+                <div class="d-flex justify-content-center m-2 p-2 border border-1 border-dark rounded">
+                    <div id="qrcode"></div>
+                </div>
+
+                <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Копировать</button>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -7,21 +7,20 @@ using Microsoft.EntityFrameworkCore;
 using NLog.Web;
 using Service.Impl;
 using Service.Interfaces;
+using Service.Mapper;
 using Новая_папка.middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var conf_builder = new ConfigurationBuilder();
-
-conf_builder.SetBasePath(Directory.GetCurrentDirectory());
-conf_builder.AddJsonFile("appsettings.json");
-var config = conf_builder.Build();
+var config = builder.Configuration;
 
 var connection = config["ConnectionStrings:DefaultConnection"];
 
-builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection,new MySqlServerVersion(new Version(8, 0, 31))),10);
+Console.WriteLine(connection);
 
-builder.Logging.ClearProviders();
+builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 31))), 10);
+
+//builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
@@ -30,6 +29,14 @@ builder.Services.AddTransient<IVoteRepository, VoteRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IGroupService, GroupService>();
 builder.Services.AddTransient<IVotingService, VotingService>();
+builder.Services.AddAutoMapper(typeof(MapperProfile));
+builder.Services.AddScoped<ILinkService, LinkService>(options => {
+    return new LinkService(
+        options.GetRequiredService<IGroupRepository>(), 
+        options.GetRequiredService<ILogger<LinkService>>(), 
+        config["DomainName"]
+    );
+});
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSignalR(options =>
@@ -56,7 +63,10 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-app.UseCors(option => {
+
+
+app.UseCors(option =>
+{
     option.AllowAnyOrigin();
     option.AllowAnyHeader();
     option.AllowAnyMethod();
@@ -74,5 +84,5 @@ app.MapHub<UserHub>("/user");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
- 
+
 app.Run();

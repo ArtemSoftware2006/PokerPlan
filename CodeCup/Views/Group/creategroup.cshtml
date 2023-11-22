@@ -20,8 +20,21 @@
         <div class="text-center p-2 mb-3" style="font-size: 34px;font-family: 'Montserrat'">Poker Planning для гибких команд разработчиков</div>
         <label class="mb-0 ms-0 m-2 p-2">Назовите комнату</label>
         <input type="text" class="mt-0 m-2 p-2 ps-4 pe-4" name="name" placeholder="Имя команты" id="groupId"/>
-        <button class="btn--blue m-2 p-2 radius-3" id="btn">Создать</button>
 
+        <label class="m-2">Тип карточек</label>
+
+        <div class="m-2 d-flex flex-row justify-content-center">
+
+            <input type="radio" class="m-2" name="CardSet" checked value="0"/>
+            <label>T-Shirt</label>
+            <input type="radio" class="m-2" name="CardSet" value="1"/>
+            <label>Фибоначи</label>
+            <input type="radio" class="m-2" name="CardSet" value="2"/>
+            <label>Последовательность</label>
+
+        </div>
+
+        <button class="btn--blue m-2 p-2 radius-3" id="btn">Создать</button>
     </form>
 
 </div>

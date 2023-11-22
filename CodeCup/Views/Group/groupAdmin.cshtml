@@ -1,58 +1,18 @@
+@using Новая_папка.Components
+
 @model GroupModel
+
 @{
     ViewData["Title"] = "Группа";
-}
-@{
+
+    int role = Convert.ToInt32(Model.Role);
+
     string guidValue = Model.Id.ToString();
+    string[] cardsKey = Model.CardsKey.Select(x => x.Key).ToArray();
 }
 
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white box-shadow mb-3">
-        <div class="d-flex flex-grow-1 align-items-center justify-content-between">
+@await Html.PartialAsync("Header", Model.Name)
 
-            <div class="d-flex justify-content-center">
-                <img class="me-1" src="@Url.Content("~/eagle.png")" alt="Орел">
-                <div style="font-size: 30px;font-family: 'Montserrat'">@Model.Name</div>
-            </div>
-
-            <div class="d-flex justify-content-center align-items-center">
-
-                <label class="form-check-label m-2 fs-4">Наблюдатель</label>
-
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorFieldMain">
-                </div>
-
-                <div class="dropdown">
-                    <a class="btn dropdown-toggle m-1 me-3" id="CurrentName" style="font-size: 26px;" href="#" role="button" 
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                    </a>
-                    <ul class="dropdown-menu m-1 ms-3">
-                        <li>
-                            <div class="dropdown-item" id="usernameDropdownItem">
-                                <div class="d-flex justify-content-between">
-                                    <p></p>
-                                    <img src="@Url.Content("~/changeNameIcon.png")" alt="изменить имя">
-                                </div>
-                            </div>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item" id="logout" href="@Url.Action("CreateGroup", "Group")">Выйти</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <button type="button" class="btn--blue m-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                    Пригласить
-                </button>
-
-                <div id="history" class="ms-3"><img  src="@Url.Content("~/History.png")" alt="История"/></div>
-            </div>
-         
-        </div>
-    </nav>
-</header>
 
 <div class="d-flex flex-column m-2 flex-grow-1 justefy-content-center text-center">
 
@@ -102,342 +62,163 @@
 
     </div>
 
-    <div class="mt-4 d-flex justify-content-between">
+    <div class="mt-4">
 
         <div class="message--no--consent m-1 d-none">
             Единого мнения о сложности этой задачи нет. Вам нужно обсудить результаты голосования. После обсуждения - повторное голосование.
         </div>
 
-        <div class="card--vote m-1">0</div>
-        <div class="card--vote m-1">1</div>
-        <div class="card--vote m-1">2</div>
-        <div class="card--vote m-1">3</div>
-        <div class="card--vote m-1">5</div>
-        <div class="card--vote m-1">8</div>
-        <div class="card--vote m-1">13</div>
-        <div class="card--vote m-1">21</div>
-        <div class="card--vote m-1">34</div>
-        <div class="card--vote m-1">55</div>
-        <div class="card--vote m-1">89</div>
-        <div class="card--vote m-1">?</div>
-        <div class="card--vote m-1">Кофе</div>
+        @CardsDisplayer.Invoke(cardsKey)
+
     </div>
 
-     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Ссылка</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="modalCLoseBtn" aria-label="Close"></button>
-                </div>
-
-                <div class="d-flex flex-column modal-body">
-
-                    <div id="linkToCopy" class="p-1 m-2 addLink--container">
-                        @Model.Link
-                    </div>
-
-                    <button type="button" data-clipboard-target="#linkToCopy" id="copyBtn" class="m-2 flex-grow-1 btn--blue">Копировать</button>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="staticChooseNameAndSeparator" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content ">
-
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="d-flex justify-content-start flex-column modal-body">
-
-                    <label class="m-2 p-1">Имя</label>
-                    <input id="nameField" type="text" class="p-1 m-2 addLink--container"/>
-
-                     <div class="m-2 d-flex justify-content-between">
-                        <div>Присоединиться как наблюдатель</div>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="isSpectatorField">
-                        </div>
-                    </div>
-
-                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameAndSpectatorBtn" class="m-2 flex-grow-1 btn--blue">Продолжить</button>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="staticChooseName" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content ">
-
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Выберете имя</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="d-flex justify-content-start flex-column modal-body">
-
-                    <label class="m-2 p-1">Введите новое имя</label>
-                    <input id="newUsernameField" type="text" class="p-1 m-2 addLink--container"/>
-
-                    <button type="button" data-clipboard-target="#linkToCopy" id="chooseNameBtn" class="m-2 flex-grow-1 btn--blue">Изменить</button>
-
-                </div>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("ModalLink", Model.Link)
+    @await Html.PartialAsync("ModalHistory", "historyBody")
+    @await Html.PartialAsync("ModalChooseNameAndSpectator", 
+        new ChooseNameAndSpectatorModel() 
+            {
+                Id="staticChooseNameAndSeparator",
+                IdBtn="chooseNameAndSpectatorBtn",
+                IdField="usernameField",
+                ChooseName = true,
+                ChooseSpectator = true
+            })
+    @await Html.PartialAsync("ModalChooseNameAndSpectator", 
+        new ChooseNameAndSpectatorModel() 
+        {
+            Id="staticChooseName",
+            IdBtn="chooseNameBtn",
+            IdField="newUsernameField",
+            ChooseName = true, 
+            ChooseSpectator = false
+        })
 
  </div>
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 <script>
 
-    let groupId = '@Html.Raw(guidValue)';
-    let isVotingStopped = false;
-    let usersInGroup = []
-    let value = 0;
-    let isFullConsent = false;
-    let average = 0;
-    let currentUsername = {name : "", id : "0", spectator : 1}
-    let isVoting = true;
+    const Roles = {
+        Admin: 0,
+        User: 1
+    }
 
+    const StatusGroup = {
+        Stopped: 0,
+        Active: 1
+    }
+
+    const UserRoleInGroup = {
+        Spectator : 0,
+        Participant : 1
+    }
+
+    let isFullConsent = false;
+    let votingStatus;
+
+    let average = 0;
+
+    let groupId = "@Html.Raw(guidValue)";
+
+    let cardSet = @Html.Raw(Json.Serialize(Model.CardsKey));
+
+    let usersInGroup = []
+
+    let CurrentUser = {name : "", id : 0, isSpectator : 1, role : 1}
+
+    let historyBody = document.getElementById("historyBody");
     let stopBtn = document.getElementById("stopBtn")
     let newVotingBtn = document.getElementById("newVotingBtn")
     let againVotingBtn = document.getElementById("againVotingBtn")
-    var cardDivs = document.querySelectorAll('.card--vote');
-    let messageNotConsent = document.querySelector('.message--no--consent');
-    var averageDiv = document.getElementById('average');
-    let userCards = document.querySelectorAll(".card--container");
-    let cardsVoting = document.querySelectorAll(".card--vote");
     let modalCloseBtn = document.getElementById("modalCLoseBtn")
-    let usernameField = document.getElementById('nameField')
     let chooseNameAndSpectatorBtn = document.getElementById('chooseNameAndSpectatorBtn')
     let chooseNameBtn = document.getElementById('chooseNameBtn')
+    let historyBtn = document.getElementById("history")
+    let logoutBtn = document.getElementById('logout')
+
+    let usernameField = document.getElementById('usernameField')
     let isSpectatorField = document.getElementById('isSpectatorField')
     let isSpectatorFieldMain = document.getElementById('isSpectatorFieldMain')
-    let usernameDropdown = document.getElementById('usernameDropdownItem')
-    let chooseNameModal = document.getElementById('staticChooseName')
     let newUsernameField = document.getElementById('newUsernameField')
     let currentNameMainField = document.getElementById("CurrentName")
-    let historyBtn = document.getElementById("history")
 
-    currentNameMainField.textContent = currentUsername.name
+    let messageNotConsent = document.querySelector('.message--no--consent');
 
-    cardDivs.forEach(function(cardDiv) {
-        cardDiv.addEventListener('click', function() {
-            if(cardDiv.classList.contains('card--vote--active')) {
-                cardDiv.classList.remove('card--vote--active');
+    let averageDiv = document.getElementById('average');
+    let usernameDropdown = document.getElementById('usernameDropdownItem')
 
-                hubConnection.invoke("DeleteVote", groupId, currentUsername.id.toString())
-                .catch(function (err) {
-                    return console.error(err.toString());
-                });
+    let userCards = document.querySelectorAll(".card--container");
+    let cardsVoting = document.querySelectorAll(".card--vote");
 
-                value = 0;
+
+    currentNameMainField.textContent = CurrentUser.name
+
+
+    //Создание событий обработки клика на карточки голосов
+    cardsVoting.forEach(function(card) {
+        card.addEventListener('click', function() {
+            if(card.classList.contains('card--vote--active')) {
+                card.classList.remove('card--vote--active');
+
+                deleteVote(CurrentUser.id)
             }
             else{
                 document.querySelector('.card--vote--active')?.classList?.remove('card--vote--active');
-                cardDiv.classList.add('card--vote--active');
+                card.classList.add('card--vote--active');
 
                 
-                hubConnection.invoke("SetVote", {"Value" : cardDiv.textContent, "GroupId" : groupId, "Username" : currentUsername.name})
-                .catch(function (err) {
-                    return console.error(err.toString());
-                });
-
-                value = cardDiv.textContent
+                setVote(card.textContent, cardSet.find(x => x.key == card.textContent).value.toString(), groupId, CurrentUser.id)
             }
         });
     });
 
-
-    const hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5010/user")
-        .build();
-    
-    hubConnection.on("FinishVoting", function(usersVote, average, consent) {
-        isFullConsent = consent
-
-        if(isFullConsent)
-            newVotingBtn.classList.remove("d-none")
-        else
-        {
-            messageNotConsent.classList.remove("d-none")
-            againVotingBtn.classList.remove("d-none")
-        }
-
-        cardsVoting.forEach(function(card) {
-            card.classList.add("d-none");
-        });
-
-        averageDiv.textContent = average;
-        averageDiv.classList.remove("d-none")
-
-        stopBtn.classList.add("d-none")
-
-        
-        userCards.forEach(function(userCard) {
-            if(userCard.children[1].textContent != "") {
-                userCard.children[0].classList.add("card--add--user--value");
-                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.value;
-            }
-        });
-
-    });
-
-    hubConnection.on("StartNewVoting", function() {
-
-        messageNotConsent.classList.add("d-none")
-
-        if(isFullConsent) 
-            newVotingBtn.classList.add("d-none")
-        else
-            againVotingBtn.classList.add("d-none")
-
-        stopBtn.classList.remove("d-none")
-        averageDiv.classList.add("d-none")
-
-
-        cardsVoting.forEach(function(card) {
-            card.classList.remove("d-none");
-        });
-
-        userCards.forEach(function(userCard) {
-            if(userCard.children[1].textContent != "") {
-                userCard.children[0].classList.remove("card--add--user--value");
-                userCard.children[0].textContent = "";
-            }
-        });
-
-    });
-
-    hubConnection.on("Logout", function(userId) {
-        
-        let deleteUser = usersInGroup.find(user => user.id == userId); 
-
-        usersInGroup = usersInGroup.filter(user => user.id != userId);
-
-        for(let i = 0; i < userCards.length; i++) {
-
-            if(userCards[i]?.children[1]?.textContent == deleteUser.name) {
-                userCards[i].children[0].classList.remove("card--add--user");
-                userCards[i].children[1].remove()
-            }
-        }
-    });
-
-    hubConnection.on("UserChangeName", function(userId, newUsername, newIsSpectator) {
-        let userUpadated = usersInGroup.find(user => user.id == userId);
-        let index = usersInGroup.indexOf(userUpadated);
-
-        let oldName = usersInGroup[index].name
-        usersInGroup[index].name = newUsername;
-
-        if(userId == currentUsername.id) {
-            currentNameMainField.textContent = newUsername
-            currentUsername.name = newUsername;
-            usernameDropdown.textContent = newUsername
-            usernameDropdownItem.textContent = newUsername
-        }
-
-        for(let i = 0; i < userCards.length; i++) {
-            if(userCards[i].children[1].textContent == oldName) {
-                userCards[i].children[1].textContent = newUsername
-                break;
-            } 
-        }
-    });
-
-    hubConnection.on("UserAdded", function(users, statusGroup) {
-
-        if(currentUsername.name === "") {
-            currentUsername = users[users.length - 1]
-            document.getElementById("CurrentName").textContent = currentUsername.name ;
-
-            usernameField.value = currentUsername.name
-
-            usernameDropdownItem.textContent = currentUsername.name
-        }   
-
-        for(let i = 0; i < users.length; i++) {
-
-            if(!usersInGroup.some(user => user.id === users[i].id)) {
-                usersInGroup.push(users[i]);
-
-                let messageElement = document.createElement("p");
-                messageElement.textContent = users[i].name ;
-                
-                for(let j = 0; j < userCards.length; j++) {
-
-                    if(userCards[j].childElementCount === 1) {
-                        userCards[j].appendChild(messageElement);
-                        userCards[j].children[0].classList.add("card--add--user");
-                        break 
-                    }
-                }
-            }
-        }
-    });
-
-    document.getElementById("logout").addEventListener("click", function () {
-        hubConnection.invoke("Logout", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-
-    });
 
     isSpectatorFieldMain.addEventListener("change", function () {
         if(isSpectatorFieldMain.checked) {
-            currentUsername.spectator = 0
-
-            for(let j = 0; j < userCards.length; j++) {
-
-                userCards[j].children[0].classList.remove("card--add--user");
-
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.add("card--add--user--shower");
-                }
-
-                cardsVoting.forEach(function(card) {
-                    card.classList.add("d-none");
-                });
-
+            CurrentUser.isSpectator  = UserRoleInGroup.Spectator
+            if(votingStatus == StatusGroup.Stopped) {
+                deleteVote(CurrentUser.id)
             }
-
+            hideVotingCard()
+            deleteActiveFromCard()
         } else {
-            currentUsername.spectator = 1
-
-            for(let j = 0; j < userCards.length; j++) {
-                if(userCards[j].childElementCount === 2) {
-                    userCards[j].children[0].classList.remove("card--add--user--shower");
-                    userCards[j].children[0].classList.add("card--add--user");
-                }
+            CurrentUser.isSpectator = UserRoleInGroup.Participant
+            if(votingStatus == StatusGroup.Active) {
+                showVotingCard()
             }
-
-            cardsVoting.forEach(function(card) {
-                card.classList.remove("d-none");
-            });
         }
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), currentUsername.name, currentUsername.spectator.toString())
+        showUserDependingRole(CurrentUser.name, CurrentUser.isSpectator)
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), CurrentUser.name, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
+            
+        console.log("Change Name and isSpectator")
     })
 
     usernameDropdownItem.addEventListener("click", function () {
         $('#staticChooseName').modal("show")
     })
+
+    logoutBtn.addEventListener("click", function () {
+
+        hubConnection.invoke("Logout", groupId, CurrentUser.id.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        if(CurrentUser.role == Roles.Admin) {
+            hubConnection.invoke("CloseGroup", groupId)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+        }
+    });
 
     newVotingBtn.addEventListener("click", function () {
         hubConnection.invoke("StartNewVoting", groupId)
@@ -463,7 +244,9 @@
     chooseNameBtn.addEventListener("click", function () {
         let newUsername = newUsernameField.value
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+        console.log(CurrentUser)
+
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
@@ -475,40 +258,23 @@
 
         let newUsername = usernameField.value
 
-        if (isSpectatorField.checked )
-            currentUsername.spectator = 0
-        else 
-            currentUsername.spectator = 1
+        if (isSpectatorField.checked ) {
+            CurrentUser.spectator = UserRoleInGroup.Spectator
+            hideVotingCard()
+            deleteVote(CurrentUser.id)
+        }
+        else {
+            CurrentUser.spectator = UserRoleInGroup.Participant
+            showVotingCard()
+        }
 
-        hubConnection.invoke("ChooseNameAndSeparator", groupId, currentUsername.id.toString(), newUsername, currentUsername.spectator.toString())
+        hubConnection.invoke("ChooseNameAndSeparator", groupId, CurrentUser.id.toString(), newUsername, CurrentUser.isSpectator.toString())
             .catch(function (err) {
                 return console.error(err.toString());
             });
 
         $('#staticChooseNameAndSeparator').modal('toggle');
     });
-
-    window.onbeforeunload = function() {
-        hubConnection.invoke("CloseGroup", groupId)
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
-    }
-    window.addEventListener('load', function() {
-        $('#staticChooseNameAndSeparator').modal('show');
-    });
-
-    hubConnection.start()
-        .then(function () {
-            hubConnection.invoke("CreateGroup", groupId)
-            .catch(function (err) {
-                return console.error(err.toString());
-            });
-        })
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
-
 
 
     var clipboard = new ClipboardJS('#copyBtn');
@@ -522,5 +288,285 @@
     });
 
 
+    window.onbeforeunload = function() {
+
+        hubConnection.invoke("Logout", groupId, currentUsername.id.toString())
+            .catch(function (err) {
+                return console.error(err.toString());
+            })
+
+        if(CurrentUser.role == Roles.Admin)
+            hubConnection.invoke("CloseGroup", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    }
+    window.addEventListener('load', function() {
+        $('#staticChooseNameAndSeparator').modal('show');
+    });
+
+
+
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("@Html.Raw(@Model.Domain)" + "/user")
+        .build();
+
+    hubConnection.on("FinishVoting", function(usersVote, average, consent) {
+        isFullConsent = consent
+        votingStatus = StatusGroup.Stopped
+
+        if(CurrentUser.role == Roles.Admin) {
+            if(isFullConsent)
+                newVotingBtn.classList.remove("d-none")
+            else
+                againVotingBtn.classList.remove("d-none")
+
+            stopBtn.classList.add("d-none")
+        }
+
+        if(!isFullConsent) {
+            messageNotConsent.classList.remove("d-none")
+        }
+
+        console.log(usersVote[0])
+
+        let historyItem = document.createElement("p");
+        historyItem.textContent = "Average : " + average + " / "
+        usersVote.forEach( function(item) {
+             historyItem.textContent += item.name + " " + item.key + "; "
+        })
+        historyBody.appendChild(historyItem)
+
+        hideVotingCard()
+        deleteActiveFromCard()
+
+        averageDiv.textContent = average;
+        averageDiv.classList.remove("d-none")
+        
+        showValueOnUserCard(userCards, usersVote)
+
+    });
+
+    hubConnection.on("StartNewVoting", function() {
+
+        votingStatus = StatusGroup.Active
+
+        messageNotConsent.classList.add("d-none")
+
+        if(CurrentUser.role == Roles.Admin) {
+            stopBtn.classList.remove("d-none")
+
+            if(isFullConsent)
+                newVotingBtn.classList.add("d-none")
+            else
+                againVotingBtn.classList.add("d-none")
+        }
+
+        averageDiv.classList.add("d-none")
+
+        showVotingCard()
+
+        resetValueFromUserCard()
+    });
+
+    hubConnection.on("Logout", function(userId) {
+        //TODO Видимо, когда выходит сам пользователь, то происходит ошибка в for.  
+        // И потому происходит перезагрузка страницы
+        let deleteUser = usersInGroup.find(user => user.id == userId); 
+
+        usersInGroup = usersInGroup.filter(user => user.id != userId);
+
+        for(let i = 0; i < userCards.length; i++) {
+
+            if(userCards[i]?.children[1]?.textContent == deleteUser.name) {
+                userCards[i].children[0].classList.remove("card--add--user");
+                userCards[i].children[1].remove()
+            }
+        }
+    });
+
+    //TODO Можно выдавать сообщение, а не перезагружать страницу
+    hubConnection.on("CloseGroup", function() {
+        
+        window.location.reload();
+    });
+
+    hubConnection.on("UserChangeNameAndSeparator", function(userId, newUsername, newIsSpectator) {
+        let userUpadated = usersInGroup.find(user => user.id == userId);
+        let index = usersInGroup.indexOf(userUpadated);
+
+        let oldName = usersInGroup[index].name
+        usersInGroup[index].name = newUsername;
+        usersInGroup[index].isSpectator = newIsSpectator;
+
+        if(userId == CurrentUser.id) {
+            currentNameMainField.textContent = newUsername
+            CurrentUser.name = newUsername;
+            usernameDropdown.textContent = newUsername
+            usernameDropdownItem.textContent = newUsername
+        }
+        //Логика изменения карточки на "Наблюдатель" и изменение имени
+        for(let i = 0; i < userCards.length; i++) {
+            
+            if(userCards[i].children[1].textContent == oldName) {
+                userCards[i].children[1].textContent = newUsername
+                break;
+            } 
+        }
+        showUserDependingRole(newUsername, newIsSpectator)
+    });
+
+    hubConnection.on("UserAdded", function(users, statusGroup) {
+        console.log(users)
+        votingStatus = statusGroup
+
+         if(CurrentUser.name === "") {
+            CurrentUser = users[users.length - 1]
+            document.getElementById("CurrentName").textContent = CurrentUser.name ;
+
+            usernameField.value = CurrentUser.name
+            newUsernameField.value = CurrentUser.name
+
+            usernameDropdownItem.textContent = CurrentUser.name
+        }   
+
+        if (statusGroup == StatusGroup.Stopped) {
+            hideVotingCard();
+        }
+
+
+        for(let i = 0; i < users.length; i++) {
+
+            if(!usersInGroup.some(user => user.id === users[i].id)) {
+                usersInGroup.push(users[i]);
+
+                let messageElement = document.createElement("p");
+                messageElement.textContent = users[i].name ;
+                
+                //Отображение пользователей в группе в карточках
+                for(let j = 0; j < userCards.length; j++) {
+
+                    if(userCards[j].childElementCount === 1) {
+                        userCards[j].appendChild(messageElement);
+
+                        showUserDependingRole(users[i].name, users[i].isSpectator)
+                        break 
+                    }
+                }
+            }
+        }
+    });
+
+    hubConnection.start()
+    .then(function () {
+
+        if(@role == Roles.Admin)
+            hubConnection.invoke("CreateGroup", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            })
+        else {
+            hubConnection.invoke("JoinGroupFromLink", groupId)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            stopBtn.classList.add("d-none")
+        }
+    }) 
+    .catch(function (err) {
+        return console.error(err.toString());
+    })  
+
+    //Показ карточек голоса у участника
+    function showVotingCard() {
+        if(CurrentUser.isSpectator == UserRoleInGroup.Participant) {
+            cardsVoting.forEach(function(card) {
+                card.classList.remove("d-none");
+            });   
+        }
+    }
+
+    function deleteVote(userId) {
+
+        console.log(userId)
+
+        hubConnection.invoke("DeleteVote", userId.toString())
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+    }
+
+    function deleteActiveFromCard() {
+        cardsVoting.forEach(function(card) {
+            if(card.classList.contains('card--vote--active')) {
+                card.classList.remove('card--vote--active');
+            }
+        });
+    }
+
+    function setVote(key, value, _groupId, userId) {
+
+        hubConnection.invoke("SetVote", {Value : value.toString(), Key : key, GroupId : _groupId.toString(), UserId :  userId})
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+    }
+
+    function hideVotingCard() {
+        cardsVoting.forEach(function(card) {
+            card.classList.add("d-none");
+        });
+    }
+
+    function resetValueFromUserCard() {
+        userCards.forEach(function(userCard) {
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.remove("card--add--user--value");
+                userCard.children[0].textContent = "";
+            }
+        });
+    }
+
+    function showValueOnUserCard(userCards, usersVote) {
+        userCards.forEach(function(userCard) {
+            if(userCard.children[1].textContent != "") {
+                userCard.children[0].classList.add("card--add--user--value");
+                userCard.children[0].textContent = usersVote?.find(x => x.name == userCard.children[1].textContent)?.key;
+            }
+        });
+    }
+
+    const qrcode = new QRCode(document.getElementById('qrcode'), {
+        text: "@Html.Raw(@Model.Link)",
+        width: 164,
+        height: 164,
+        colorDark : '#000',
+        colorLight : '#fff',
+        correctLevel : QRCode.CorrectLevel.H
+    });
+
+    //А не скрывает карточку
+    function showUserDependingRole(username, userRoleInGroup) {
+
+        console.log("CreateUserCardToShower : " + username + " " + userRoleInGroup)
+        for(let i = 0; i < userCards.length; i++) {
+
+            if(userCards[i].children[1].textContent == username) {
+                if(userRoleInGroup == UserRoleInGroup.Spectator) {
+                    userCards[i].children[0].classList.remove("card--add--user");
+                    userCards[i].children[0].classList.add("card--add--user--shower");
+
+                }
+                if(userRoleInGroup == UserRoleInGroup.Participant) {
+                    userCards[i].children[0].classList.add("card--add--user");
+                    userCards[i].children[0].classList.remove("card--add--user--shower");
+                }
+
+                break
+            }
+        }
+    }
+        
     
 </script>

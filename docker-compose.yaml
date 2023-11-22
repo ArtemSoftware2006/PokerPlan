@@ -1,0 +1,39 @@
+# Файл docker-compose должен начинаться с тега версии.
+version: '3.1'
+# Следует учитывать, что docker-composes работает с сервисами.
+# 1 сервис = 1 контейнер.
+# Сервисом может быть клиент, сервер, сервер баз данных...
+services:
+  app:
+    # Ключевое слово "build" позволяет задать
+    # путь к файлу Dockerfile, который нужно использовать для создания образа,
+    # который позволит запустить сервис.
+    # Здесь 'server/' соответствует пути к папке сервера,
+    # которая содержит соответствующий Dockerfile.
+    
+    #build: server/  РАССКАЗАТЬ ПРО BUILD
+
+    image: artem06/code-cup:latest
+    # Привязка портов
+    ports:
+      - "3000:80"
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - db
+    #Настраиваю нужные параметры конфигурации
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development  
+      ConnectionStrings__DefaultConnection: 
+        "Server=db;Database=code_masters;user=root;password=1111;Pooling=true;Max Pool Size=50"
+      DomainName: 
+        "http://localhost:3000"
+  # Второй сервис с бд MySql
+  db:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "1111"
+      MYSQL_DATABASE: code_masters
+

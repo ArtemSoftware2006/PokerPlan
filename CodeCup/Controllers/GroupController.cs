@@ -1,7 +1,4 @@
-using DAL;
-using DAL.Impl;
-using DAL.interfaces;
-using Domain.Entity;
+using Domain.Cards;
 using Domain.Enum;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
@@ -13,75 +10,141 @@ namespace Новая_папка.Controllers
     [Route("[controller]/[action]")]
     public class GroupController : Controller
     {
+        private const int MAX_USERS_IN_GROUP = 6;
+        private readonly string domain;
         private readonly ILogger<GroupController> _logger;
+        private readonly ILinkService _linkService;
         private readonly IGroupService _groupService;
         private readonly IUserService _userService;
-        public GroupController(ILogger<GroupController> logger, IGroupService groupService, IUserService userService)
+
+        public GroupController(ILogger<GroupController> logger, 
+            IGroupService groupService, 
+            IUserService userService, 
+            ILinkService linkService,
+            IConfiguration configuration)
         {
+            _linkService = linkService;
             _userService = userService;
             _groupService = groupService;
             _logger = logger;
+            domain = configuration.GetValue<string>("DomainName");
         }
         [HttpGet]
-        public IActionResult CreateGroup() 
+        public IActionResult CreateGroup()
         {
             return View();
         }
+        //TODO Передавать на клиент домен хоста
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(string name) 
-        {
-            name = name.Trim();
-
-            string domainName = Request.Host.Value;
-
-            Guid groupId = Guid.NewGuid();
-            string link = domainName  + "/Group/Join/" + groupId;
-
-            await  _groupService.CreateAsync(new GroupVm() 
-            {
-                Id = groupId, Name = name
-            });
-
-            return View("groupAdmin", new GroupModel() {Name = name, Link = link, Id=groupId.ToString()});
-        }
-        [HttpGet("{group}")]
-        public async Task<IActionResult> Join(string group)
+        public async Task<IActionResult> CreateGroup(GroupVm model)
         {
             try
             {
-                var response = await _groupService.GetAsync(group);
+                model.Name = model.Name.Trim();
 
-                if (response.Status == Status.Ok)
+                Guid groupId = await _groupService.CreateAsync(model);
+
+                string link = await _linkService.GenerateLink(groupId);
+
+                return View("groupAdmin",
+                new GroupModel()
                 {
-                    var responseUser =  _userService.GetAll();
+                    Name = model.Name,
+                    Link = link,
+                    Id = groupId.ToString(),
+                    Role = Role.Admin,
+                    CardsKey = chooceCards(model.CardSet)
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
 
-                    if (response.Status == Status.Ok)
+                return Redirect("/Error/NotFound");
+            }
+        }
+        [HttpGet("{groupId}")]
+        public async Task<IActionResult> JoinToGroup(string groupId)
+        {
+            //TODO Реализовать Join в слое сервисов (или проверку на возможность присоединения к группе)
+            //TODO В NotFound показывать текст ошибки
+            try
+            {
+                var responseGroup = await _groupService.GetAsync(groupId);
+
+                if (responseGroup.Status == Status.Ok)
+                {
+                    var responseUser = _userService.GetAll();
+
+                    if (responseUser.Status == Status.Ok)
                     {
-                        string domainName = Request.Host.Value;
+                        string link = await _linkService.GenerateLink(Guid.Parse(groupId));
 
-                        string link = domainName + "/Group/Join/" + group;
+                        var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(groupId));
 
-                        var countUsers = responseUser.Data.Count(x => x.GroupId == Guid.Parse(group));
-
-                        if (!(countUsers < 6))
+                        if (!(countUsers < MAX_USERS_IN_GROUP))
                         {
                             return Redirect("/Error/NotFound");
                         }
 
-                        if (response.Data != null && response.Data.Status != StatusEntity.Closed)
+                        if (responseGroup.Data != null && responseGroup.Data.Status != StatusEntity.Closed)
                         {
-                            return View("groupUser", new GroupModel() {Name = response.Data.Name, Id = group, Link = link});
-                        }     
-                    } 
+                            return View("groupAdmin",
+                                new GroupModel()
+                                {
+                                    Name = responseGroup.Data.Name,
+                                    Id = groupId,
+                                    Link = link,
+                                    Role = Role.User,
+                                    CardsKey = chooceCards(responseGroup.Data.CardSet)
+                                });
+                        }
+                    }
                 }
-                
+
                 return Redirect("/Error/NotFound");
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.StackTrace);
+
                 return Redirect("/Error/NotFound");
             }
-            
+
+        }
+
+        private KeyValuePair<string, int>[] chooceCards(CardSet cardSet) 
+        {
+            switch (cardSet)
+            {   
+                case CardSet.TShirt : return new TShirtCards().getCards();
+                case CardSet.Fibonachi : return new FibCards().getCards();
+                case CardSet.NaturalNumbers : return new NaturalNumbersCards().getCards();
+                
+                default: throw new Exception("Набора карточек с номером : " + cardSet);
+            }
+        }
+
+        public IActionResult ModalLink(string link)
+        {
+            return View(link);
+        }
+
+        public IActionResult ModalHistory(string[] history)
+        {
+            return View(history);
+        }
+
+        public IActionResult ModalChooseNameAndSpectator(ChooseNameAndSpectatorModel model)
+        {
+            return View(model);
+        }
+
+        public IActionResult Header(string username)
+        {
+            return View(username);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
