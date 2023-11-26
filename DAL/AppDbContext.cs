@@ -10,6 +10,7 @@ namespace DAL
         public DbSet<Vote> Votes { get; set; }
         public DbSet<Group> Groups { get; set; }
         public AppDbContext() => Database.EnsureCreated();
+
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
          { 

@@ -9,6 +9,7 @@ using Service.Impl;
 using Service.Interfaces;
 using Service.Mapper;
 using Новая_папка.middlewares;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,13 @@ var connection = config["ConnectionStrings:DefaultConnection"];
 
 Console.WriteLine(connection);
 
-builder.Services.AddDbContextPool<AppDbContext>(option => option.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 31))), 10);
+builder.Services.AddDbContextPool<AppDbContext>(option => {
+        option.UseMySql(connection, new MySqlServerVersion(new Version(8, 0, 31)));
+        option.LogTo(new StreamWriter(Directory.GetCurrentDirectory() + "\\sql_log.txt" , true).WriteLine, 
+                                        new[] {Database.Command.Name, Update.Name},
+                                        LogLevel.Information);
+    },
+     10);
 
 //builder.Logging.ClearProviders();
 builder.Host.UseNLog();
